@@ -149,7 +149,7 @@ A comment resolution links to changed records and explains what changed or why n
 9. Regenerate and commit the HTML.
 10. Resolve the GitHub thread only after the record and presentation agree.
 
-The self-contained reference renderer reads JSON and uses only Node.js built-ins after TypeScript loading. It requires Node.js 20 or newer and can be run with the repository-pinned `tsx` dependency (`npm run ...`) or directly through `npx tsx`:
+The self-contained reference renderer reads JSON and uses only Node.js built-ins after TypeScript loading. It requires Node.js 24 or newer and can be run with the repository-pinned `tsx` dependency (`npm run ...`) or directly through `npx tsx`:
 
 ```bash
 npx tsx scripts/render_discovery.ts path/to/workspace
