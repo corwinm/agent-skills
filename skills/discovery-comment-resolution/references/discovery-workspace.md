@@ -149,11 +149,11 @@ A comment resolution links to changed records and explains what changed or why n
 9. Regenerate and commit the HTML.
 10. Resolve the GitHub thread only after the record and presentation agree.
 
-The first reference renderer reads JSON and uses only the Python standard library:
+The self-contained reference renderer reads JSON and uses only Node.js built-ins after TypeScript loading. It requires Node.js 20 or newer and can be run with the repository-pinned `tsx` dependency (`npm run ...`) or directly through `npx tsx`:
 
 ```bash
-python3 scripts/render_discovery.py path/to/workspace
-python3 scripts/render_discovery.py path/to/workspace --check
+npx tsx scripts/render_discovery.ts path/to/workspace
+npx tsx scripts/render_discovery.ts path/to/workspace --check
 ```
 
 `--check` rerenders in memory and compares the exact expected filename set and file bytes. It fails when presentation files are missing, unexpected, hand-edited, or stale relative to canonical sources or renderer behavior. Rendering validates before replacement and restores the previous presentation if the directory swap fails.

@@ -13,7 +13,7 @@ metadata:
 
 Create or update a portable discovery workspace whose structured records remain canonical and whose committed HTML helps humans understand and review the work.
 
-Read [`references/discovery-workspace.md`](references/discovery-workspace.md) before creating the workspace. Use `scripts/render_discovery.py` for deterministic JSON-based rendering when Python is available.
+Read [`references/discovery-workspace.md`](references/discovery-workspace.md) before creating the workspace. Use the self-contained `scripts/render_discovery.ts` for deterministic JSON-based rendering with Node.js and `tsx`.
 
 ## Workflow
 
@@ -42,11 +42,11 @@ Detailed views must expose stable `data-record-id` and `data-field` anchors. Esc
 
 ## Rendering commands
 
-From an installed skill directory, copy or invoke the bundled renderer:
+From an installed skill directory, invoke the bundled renderer:
 
 ```bash
-python3 scripts/render_discovery.py path/to/workspace
-python3 scripts/render_discovery.py path/to/workspace --check
+npx tsx scripts/render_discovery.ts path/to/workspace
+npx tsx scripts/render_discovery.ts path/to/workspace --check
 ```
 
 If a project already has an equivalent renderer, preserve its stack and verify the same invariants rather than replacing it automatically.

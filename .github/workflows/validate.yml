@@ -14,16 +14,21 @@ jobs:
     steps:
       - name: Check out skills
         uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          python-version: "3.x"
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Type-check TypeScript
+        run: npm run typecheck
       - name: Run repository validator
-        run: python3 scripts/validate.py
+        run: npm run validate
       - name: Test discovery renderer
-        run: python3 -m unittest discover -s tests -v
+        run: npm test
       - name: Verify example presentation is current
-        run: python3 scripts/render_discovery.py examples/deployment-visibility --check
+        run: npm run check:example
       - name: Verify skills.sh discovery
         run: npx --yes skills@latest add . --list
       - name: Check out Agent Skills reference validator

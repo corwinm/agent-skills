@@ -59,8 +59,8 @@ See [`docs/discovery-artifact.md`](docs/discovery-artifact.md) for the portable 
 Discovery artifacts can live at the root of their own repository or inside a larger repository. Canonical JSON records remain the source of truth, while a deterministic renderer commits a hybrid HTML presentation for GitHub review.
 
 ```bash
-python3 scripts/render_discovery.py path/to/discovery
-python3 scripts/render_discovery.py path/to/discovery --check
+npx tsx scripts/render_discovery.ts path/to/discovery
+npx tsx scripts/render_discovery.ts path/to/discovery --check
 ```
 
 Comments combine stable record and field IDs with selected-text context. The default risk-based policy applies meaning-preserving corrections automatically and proposes changes that materially affect evidence, problem framing, decisions, recommendations, or experiments.
@@ -82,14 +82,15 @@ See [`docs/discovery-workspace.md`](docs/discovery-workspace.md) and the committ
 Validate all skills:
 
 ```bash
-python3 scripts/validate.py
+npm run validate
 ```
 
 Run renderer tests and verify the example presentation is current:
 
 ```bash
-python3 -m unittest discover -s tests -v
-python3 scripts/render_discovery.py examples/deployment-visibility --check
+npm run typecheck
+npm test
+npm run check:example
 ```
 
 Contributions should include a concrete scenario showing how the change improves agent behavior. See [CONTRIBUTING.md](CONTRIBUTING.md).

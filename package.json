@@ -1,0 +1,22 @@
+{
+  "name": "agent-skills",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "validate": "tsx scripts/validate.ts",
+    "render:example": "tsx scripts/render_discovery.ts examples/deployment-visibility",
+    "check:example": "tsx scripts/render_discovery.ts examples/deployment-visibility --check",
+    "check": "npm run typecheck && npm test && npm run validate && npm run check:example"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
