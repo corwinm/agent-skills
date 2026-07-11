@@ -1,0 +1,93 @@
+version: "0.1"
+request:
+  id: request-001
+  verbatim: ""
+  requester: ""
+  source: ""
+  received_at: ""
+  proposed_solution: ""
+  stated_rationale: ""
+  urgency: ""
+
+sources:
+  - id: source-001
+    type: interview
+    title: ""
+    participant_or_creator: ""
+    collected_at: ""
+    source_locator: ""
+    scope: ""
+    limitations: []
+
+evidence:
+  - id: evidence-001
+    statement: ""
+    type: observation
+    source_id: source-001
+    source_excerpt: ""
+    source_locator: ""
+    affected_group: ""
+    situation: ""
+    timeframe: ""
+    collected_at: ""
+    corroboration: []
+    tensions: []
+    limitations: []
+
+interpretations:
+  - id: interpretation-001
+    statement: ""
+    evidence_ids: []
+    author: ""
+    alternative_interpretations: []
+    open_questions: []
+
+assumptions:
+  - id: assumption-001
+    statement: ""
+    owner: ""
+    risk: ""
+    consequence_if_wrong: ""
+    proposed_validation: ""
+    status: unverified
+
+problem_hypotheses:
+  - id: problem-001
+    affected_group: ""
+    situation: ""
+    goal: ""
+    difficulty: ""
+    consequence: ""
+    supporting_evidence_ids: []
+    contradicting_evidence_ids: []
+    unknowns: []
+    confidence_rationale: ""
+
+open_questions: []
+
+decisions:
+  - id: decision-001
+    decision: ""
+    owner: ""
+    decided_at: ""
+    alternatives_considered: []
+    rationale: ""
+    evidence_ids: []
+    unresolved_dissent: []
+    assumptions_accepted: []
+    revisit_at: ""
+
+experiments:
+  - id: experiment-001
+    problem_hypothesis_id: problem-001
+    critical_assumption_id: assumption-001
+    type: experiment
+    intervention: ""
+    participants: []
+    procedure: []
+    safeguards: []
+    signals: []
+    data_sources: []
+    timeframe: ""
+    decision_rule: ""
+    owner: ""
