@@ -255,7 +255,7 @@ function page(title: string, active: string, w: Workspace, body: string): string
   <link rel="stylesheet" href="artifact.css">
   <script src="artifact.js" defer></script>
 </head>
-<body>
+<body data-workspace-id="${e(d.id)}" data-page="${e(active)}">
   <!-- Generated from discovery records. Do not edit directly. -->
   <header class="app-header">
     <div>
@@ -268,7 +268,8 @@ function page(title: string, active: string, w: Workspace, body: string): string
     </div>
   </header>
   ${nav(active)}
-  <main>${body}</main>
+  <main><button class="page-comment review-trigger" type="button" data-page-target="${e(active)}" aria-label="Comment on this page">✎ <span>Comment on page</span></button>${body}</main>
+  <dialog id="review-drawer" aria-labelledby="review-title"><form method="dialog" class="drawer-close"><button aria-label="Close comments">×</button></form><h2 id="review-title">Review thread</h2><p id="review-target"></p><form id="review-form"><label for="review-body">Comment</label><textarea id="review-body" name="body" required></textarea><button type="submit">Add comment</button></form><div id="review-threads" aria-live="polite"></div></dialog>
   <footer>Updated ${e(d.updated_at)} · Workspace ${e(d.id)}</footer>
 </body>
 </html>
@@ -526,11 +527,35 @@ dl { margin-bottom: 0; } dl div { border-top: 1px solid var(--line); padding: 12
 .policy { border: 1px solid #d6c8a9; background: #f7efd9; color: #66480f; padding: 16px 18px; margin-bottom: 24px; }
 .comment { max-width: 820px; } .comment.open { border-left: 4px solid var(--warning); } .comment-target { color: var(--muted); font: .78rem ui-monospace, monospace; margin-top: 16px; } .comment-body { font-size: 1.08rem; } .comment-meta { color: var(--muted); font-size: .8rem; justify-content: flex-start; }
 .button { margin-left: auto; padding: 7px 11px; border: 1px solid var(--line); text-decoration: none; color: var(--ink); }
+.review-trigger { border: 1px solid var(--line); background: var(--surface); color: var(--accent); cursor: pointer; padding: 5px 8px; }
+[data-record-id][data-field] { position: relative; }
+[data-record-id][data-field] > .review-trigger { position: absolute; right: 4px; top: 4px; }
+.page-comment { float: right; margin-bottom: 12px; } #review-drawer { width: min(520px, 94vw); margin: 0 0 0 auto; height: 100%; max-height: none; border: 0; border-left: 1px solid var(--line); padding: 28px; }
+#review-drawer::backdrop { background: #18201d88; } .drawer-close { text-align: right; } .drawer-close button { font-size: 1.5rem; border: 0; background: none; } #review-form label, #review-form textarea { display: block; width: 100%; } #review-form textarea { min-height: 100px; margin: 6px 0 10px; } .live-thread { border-top: 1px solid var(--line); padding: 14px 0; } .live-thread .tag { display: inline-block; } .proposal { white-space: pre-wrap; background: var(--paper); padding: 10px; overflow-wrap: anywhere; }
 @media (max-width: 760px) { .app-header { align-items: start; flex-direction: column; } .overview-grid, .record-grid, .evidence-columns { grid-template-columns: 1fr; } .metrics { grid-template-columns: repeat(2, 1fr); } .metrics a:nth-child(2) { border-right: 0; } .metrics a { border-bottom: 1px solid var(--line); } .timeline li { grid-template-columns: 1fr; gap: 4px; } }
 @media (prefers-reduced-motion: no-preference) { a { transition: color .15s ease, background .15s ease; } }
 `;
-const JS =
-  "// Presentation behavior is intentionally limited to accessible native HTML controls.\n";
+const JS = String.raw`(() => {
+  const drawer = document.querySelector('#review-drawer');
+  const form = document.querySelector('#review-form');
+  const threads = document.querySelector('#review-threads');
+  const targetLabel = document.querySelector('#review-target');
+  let target = null;
+  const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  async function api(path, options) { const response = await fetch(path, { headers: {'content-type':'application/json'}, ...options }); const value = await response.json(); if (!response.ok) throw new Error(value.error || response.statusText); return value; }
+  async function refresh() {
+    const all = await api('/api/comments');
+    const matching = all.filter((item) => item.target.record_id === target.record_id && (item.target.field || '') === (target.field || '') && (item.target.page || '') === (target.page || ''));
+    threads.innerHTML = matching.map((item) => '<article class="live-thread"><span class="tag">' + esc(item.status) + '</span><p>' + esc(item.body) + '</p>' + (item.replies || []).map((reply) => '<p><strong>' + esc(reply.author) + ':</strong> ' + esc(reply.body) + '</p>').join('') + (item.status === 'open' ? '<form class="reply-form" data-reply="' + esc(item.id) + '"><label>Reply <input name="body" required></label><button type="submit">Reply</button></form><button data-agent="' + esc(item.id) + '">Request agent</button><button data-resolve="' + esc(item.id) + '">Resolve</button><div data-job-for="' + esc(item.id) + '"></div>' : '') + '</article>').join('') || '<p>No comments on this target.</p>';
+  }
+  function open(button) { const host = button.closest('[data-record-id][data-field]'); target = host ? {record_id: host.dataset.recordId, field: host.dataset.field} : {record_id: document.body.dataset.workspaceId, page: button.dataset.pageTarget}; targetLabel.textContent = target.record_id + ' · ' + (target.field || target.page); drawer.showModal(); refresh().catch(showError); }
+  function showError(error) { threads.textContent = String(error); }
+  document.querySelectorAll('[data-record-id][data-field]').forEach((host) => { if (host.querySelector(':scope > .review-trigger')) return; const button = document.createElement('button'); button.type='button'; button.className='review-trigger'; button.setAttribute('aria-label', 'Comment on ' + host.dataset.recordId + ' ' + host.dataset.field); button.textContent='✎'; host.append(button); });
+  document.addEventListener('click', async (event) => { const button = event.target.closest('button'); if (!button) return; if (button.classList.contains('review-trigger')) return open(button); try { if (button.dataset.agent) { const job = await api('/api/comments/' + encodeURIComponent(button.dataset.agent) + '/agent', {method:'POST'}); const slot = document.querySelector('[data-job-for="' + button.dataset.agent + '"]'); slot.textContent='Agent queued…'; const poll = async () => { const current = await api('/api/jobs/' + encodeURIComponent(job.id)); if (current.status === 'queued') return setTimeout(poll, 100); slot.innerHTML = current.status === 'failed' ? esc(current.error) : '<p>' + esc(current.response.message) + '</p>' + (current.response.proposal ? '<pre class="proposal">' + esc(JSON.stringify(current.response.proposal, null, 2)) + '</pre><button data-apply="' + esc(job.id) + '">Apply proposal</button>' : ''); }; poll(); } if (button.dataset.resolve) { await api('/api/comments/' + encodeURIComponent(button.dataset.resolve) + '/resolve', {method:'POST', body:JSON.stringify({resolution:'accepted-no-change'})}); await refresh(); } if (button.dataset.apply) { await api('/api/jobs/' + encodeURIComponent(button.dataset.apply) + '/apply', {method:'POST'}); await refresh(); location.reload(); } } catch (error) { showError(error); } });
+  document.addEventListener('submit', async (event) => { const reply = event.target.closest('.reply-form'); if (!reply) return; event.preventDefault(); try { const body = new FormData(reply).get('body'); await api('/api/comments/' + encodeURIComponent(reply.dataset.reply) + '/replies', {method:'POST', body:JSON.stringify({body, author:'browser reviewer'})}); await refresh(); } catch (error) { showError(error); } });
+  form.addEventListener('submit', async (event) => { event.preventDefault(); try { const body = new FormData(form).get('body'); await api('/api/comments', {method:'POST', body:JSON.stringify({target, body, author:'browser reviewer'})}); form.reset(); await refresh(); } catch (error) { showError(error); } });
+})();
+`;
 export function renderFiles(workspace: Workspace, digest: string): Map<string, Buffer> {
   const d = workspace.discovery;
   const manifest = {

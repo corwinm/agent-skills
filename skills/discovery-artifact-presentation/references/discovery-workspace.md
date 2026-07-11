@@ -31,6 +31,34 @@ discovery-workspace/
 
 Canonical records, source material, comments, and revision history are the source of truth. Files under `presentation/` are deterministic generated output and must not be edited directly.
 
+Active browser-review threads and agent jobs live in `.review/review.sqlite`, outside the
+canonical presentation. Resolved threads are exported to `comments/`; applied proposals append
+the revision ledger. The SQLite implementation satisfies the hosted-compatible `ReviewStorage`
+boundary, while agent integrations satisfy `AgentAdapter`.
+
+## Interactive local review
+
+Requires Node.js 24 or newer. From this repository, run exactly:
+
+```bash
+npm install
+npm run render:example
+npm run review:example
+```
+
+Open <http://127.0.0.1:4173>. Use the pencil beside a stable record/field, or **Comment on
+page**, to open the review drawer. Threads can receive replies, be resolved, or be sent to the
+deterministic mock agent. Agent proposals show their structured before/after values and require
+an explicit **Apply proposal** action. Set `PORT` or pass a numeric second argument to choose a
+port: `node scripts/review_server.ts path/to/workspace 8080`.
+
+The HTTP surface is deliberately portable: JSON resources under `/api/comments` and `/api/jobs`,
+the `ReviewStorage` interface for hosted persistence, and `AgentAdapter` for hosted queues. The
+default CLI adapter writes one versioned JSON request to stdin, closes stdin, and accepts exactly
+one versioned JSON response from stdout; diagnostics belong on stderr. The local process binds
+only to `127.0.0.1`, serves only single-level generated presentation files, and is not an
+authenticated multi-user service.
+
 ## Root record
 
 `discovery.json` contains:
@@ -43,9 +71,9 @@ Canonical records, source material, comments, and revision history are the sourc
 - `request`: preserved original request
 - `decision_needed`
 - `recommendation`
-- `review.mode`: normally `github-pull-request`
+- `review.mode`: normally `interactive-browser`; other channels attach through adapters
 - `review.authority`: `automatic`, `proposal-only`, or `risk-based`
-- `review.repository` and `review.pull_request` when known
+- `review.repository` and `review.pull_request` when GitHub context is useful
 
 The workspace can move without changing its IDs. Internal links and references must remain relative to the workspace root.
 
@@ -136,18 +164,19 @@ Every agent revision appends an entry to `history/revisions.json`:
 
 A comment resolution links to changed records and explains what changed or why no change was made.
 
-## GitHub review workflow
+## Browser review workflow
 
-1. Create or update canonical records on a branch.
-2. Run the renderer and commit `presentation/` with the source records.
-3. Open or update a pull request.
-4. Reviewers read the HTML and comment on linked canonical records.
-5. Capture review comments in `comments/` with stable targets.
-6. An agent classifies each comment under the authority policy.
-7. The agent applies safe corrections or proposes material changes.
-8. Update comment resolution and append the revision ledger.
-9. Regenerate and commit the HTML.
-10. Resolve the GitHub thread only after the record and presentation agree.
+1. Create or update canonical records.
+2. Run the renderer to create the browser presentation.
+3. Start the interactive review service for the workspace.
+4. Reviewers comment on pages or stable record/field targets in the browser.
+5. Active threads and agent jobs persist in the review database.
+6. A reviewer sends a thread to the configured agent adapter.
+7. The agent replies with an explanation and an optional structured proposal.
+8. Apply meaning-preserving changes under policy or require explicit approval for material changes.
+9. Update canonical records, append the revision ledger, and regenerate the presentation.
+10. Resolve and export the thread only after the browser artifact reflects the response.
+11. Commit canonical records, exported resolutions, revision history, and generated presentation together when Git history is desired.
 
 The self-contained reference renderer reads JSON and uses only Node.js built-ins. Node.js 24 or newer runs its erasable TypeScript syntax directly without a loader or transpilation step:
 

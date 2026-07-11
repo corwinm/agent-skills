@@ -5,7 +5,7 @@
   "stage": "problem-framing",
   "updated_at": "2026-07-11T18:00:00Z",
   "review": {
-    "mode": "github-pull-request",
+    "mode": "interactive-browser",
     "authority": "risk-based",
     "repository": "corwinm/agent-skills",
     "pull_request": 1

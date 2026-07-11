@@ -56,14 +56,14 @@ See [`docs/discovery-artifact.md`](docs/discovery-artifact.md) for the portable 
 
 #### Reviewable discovery workspaces
 
-Discovery artifacts can live at the root of their own repository or inside a larger repository. Canonical JSON records remain the source of truth, while a deterministic renderer commits a hybrid HTML presentation for GitHub review.
+Discovery artifacts can live at the root of their own repository or inside a larger repository. Canonical JSON records remain the source of truth, while a deterministic renderer produces a hybrid HTML presentation with an interactive browser review service.
 
 ```bash
-node scripts/render_discovery.ts path/to/discovery
-node scripts/render_discovery.ts path/to/discovery --check
+npm run render:example
+npm run review:example
 ```
 
-Comments combine stable record and field IDs with selected-text context. The default risk-based policy applies meaning-preserving corrections automatically and proposes changes that materially affect evidence, problem framing, decisions, recommendations, or experiments.
+Open <http://127.0.0.1:4173>, then use the pencil beside any reviewable statement or the page-level comment button. Browser threads persist in SQLite, can be sent to a portable CLI agent, and are exported into the workspace when resolved. Run `node scripts/render_discovery.ts path/to/discovery --check` to verify committed output.
 
 See [`docs/discovery-workspace.md`](docs/discovery-workspace.md) and the committed [`examples/deployment-visibility`](examples/deployment-visibility) workspace.
 

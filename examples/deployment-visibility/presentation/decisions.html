@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="artifact.css">
   <script src="artifact.js" defer></script>
 </head>
-<body>
+<body data-workspace-id="deployment-visibility" data-page="decisions.html">
   <!-- Generated from discovery records. Do not edit directly. -->
   <header class="app-header">
     <div>
@@ -21,7 +21,7 @@
     </div>
   </header>
   <nav aria-label="Artifact views"><a href="index.html">Overview</a><a href="evidence.html">Evidence</a><a href="hypotheses.html">Hypotheses</a><a href="decisions.html" aria-current=page>Decisions</a><a href="experiment.html">Experiment</a><a href="review.html">Review</a></nav>
-  <main><header class="page-intro"><span class="eyebrow">Audit</span><h2>Decisions and revisions</h2><p>Choices, rationale, dissent, and changes remain reviewable.</p></header>
+  <main><button class="page-comment review-trigger" type="button" data-page-target="decisions.html" aria-label="Comment on this page">✎ <span>Comment on page</span></button><header class="page-intro"><span class="eyebrow">Audit</span><h2>Decisions and revisions</h2><p>Choices, rationale, dissent, and changes remain reviewable.</p></header>
         <article class="record" id="decision-001" data-record-id="decision-001">
           <span class="record-id">decision-001</span>
           <h2 data-record-id="decision-001" data-field="decision">Run a manually assisted status-response experiment</h2>
@@ -30,6 +30,7 @@
           <h3>Alternatives considered</h3><ul><li>Build the centralized dashboard</li><li>Train support to use existing deployment tools</li><li>Make no change</li></ul>
           <h3>Unresolved dissent</h3><ul><li>Engineering leadership still wants portfolio reporting investigated separately.</li></ul>
         </article><section class="panel revision-panel"><h2>Revision history</h2><ol class="timeline"><li><span>2026-07-11T18:00:00Z</span><strong>Added initial problem hypotheses and experiment decision.</strong><code>revision-001</code></li></ol></section></main>
+  <dialog id="review-drawer" aria-labelledby="review-title"><form method="dialog" class="drawer-close"><button aria-label="Close comments">×</button></form><h2 id="review-title">Review thread</h2><p id="review-target"></p><form id="review-form"><label for="review-body">Comment</label><textarea id="review-body" name="body" required></textarea><button type="submit">Add comment</button></form><div id="review-threads" aria-live="polite"></div></dialog>
   <footer>Updated 2026-07-11T18:00:00Z · Workspace deployment-visibility</footer>
 </body>
 </html>

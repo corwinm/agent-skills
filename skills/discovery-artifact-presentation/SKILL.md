@@ -21,10 +21,10 @@ Read [`references/discovery-workspace.md`](references/discovery-workspace.md) be
 2. **Preserve canonical records.** Store the original request, evidence, hypotheses, decisions, experiments, comments, sources, and revisions outside `presentation/`. Never treat generated HTML as canonical.
 3. **Assign stable IDs.** Give every request, evidence item, hypothesis, decision, experiment, comment, and revision a unique ID. Use IDs for relationships and comment targets.
 4. **Validate provenance.** Ensure evidence links to sources, interpretations are not presented as evidence, hypotheses retain contradiction and uncertainty, and unknown fields remain unknown.
-5. **Configure review.** Record GitHub repository and pull-request context when available. Set `review.authority`; default to `risk-based`.
-6. **Render the hybrid presentation.** Generate the executive overview plus evidence, hypotheses, decisions, experiment, and review views. Do not hand-edit generated files.
+5. **Configure review.** Use interactive browser review by default, record GitHub context when available, and set `review.authority`; default to `risk-based`.
+6. **Render the hybrid presentation.** Generate the executive overview plus evidence, hypotheses, decisions, experiment, and review views with stable browser comment targets. Do not hand-edit generated files.
 7. **Check freshness.** Run the renderer with `--check`. Complete only when the manifest digest matches the canonical workspace.
-8. **Prepare GitHub review.** Commit source records and generated presentation together. Explain where reviewers should comment and which records remain uncertain.
+8. **Run interactive review.** Serve the workspace through the review application. Verify page and field pencils open persisted threads and that an agent proposal can be reviewed without silently changing canonical records.
 
 ## Presentation hierarchy
 

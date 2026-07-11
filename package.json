@@ -10,6 +10,7 @@
     "test": "node --test tests/*.test.ts",
     "validate": "node scripts/validate.ts",
     "render:example": "node scripts/render_discovery.ts examples/deployment-visibility",
+    "review:example": "node scripts/review_server.ts examples/deployment-visibility",
     "check:example": "node scripts/render_discovery.ts examples/deployment-visibility --check",
     "check": "npm run format:check && npm run typecheck && npm test && npm run validate && npm run check:example"
   },

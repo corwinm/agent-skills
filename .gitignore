@@ -1,4 +1,8 @@
 node_modules/
+.review/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
 coverage/
 dist/
 *.tsbuildinfo
