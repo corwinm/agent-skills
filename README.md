@@ -59,8 +59,8 @@ See [`docs/discovery-artifact.md`](docs/discovery-artifact.md) for the portable 
 Discovery artifacts can live at the root of their own repository or inside a larger repository. Canonical JSON records remain the source of truth, while a deterministic renderer commits a hybrid HTML presentation for GitHub review.
 
 ```bash
-npx tsx scripts/render_discovery.ts path/to/discovery
-npx tsx scripts/render_discovery.ts path/to/discovery --check
+node scripts/render_discovery.ts path/to/discovery
+node scripts/render_discovery.ts path/to/discovery --check
 ```
 
 Comments combine stable record and field IDs with selected-text context. The default risk-based policy applies meaning-preserving corrections automatically and proposes changes that materially affect evidence, problem framing, decisions, recommendations, or experiments.

@@ -149,11 +149,11 @@ A comment resolution links to changed records and explains what changed or why n
 9. Regenerate and commit the HTML.
 10. Resolve the GitHub thread only after the record and presentation agree.
 
-The self-contained reference renderer reads JSON and uses only Node.js built-ins after TypeScript loading. It requires Node.js 24 or newer and can be run with the repository-pinned `tsx` dependency (`npm run ...`) or directly through `npx tsx`:
+The self-contained reference renderer reads JSON and uses only Node.js built-ins. Node.js 24 or newer runs its erasable TypeScript syntax directly without a loader or transpilation step:
 
 ```bash
-npx tsx scripts/render_discovery.ts path/to/workspace
-npx tsx scripts/render_discovery.ts path/to/workspace --check
+node scripts/render_discovery.ts path/to/workspace
+node scripts/render_discovery.ts path/to/workspace --check
 ```
 
 `--check` rerenders in memory and compares the exact expected filename set and file bytes. It fails when presentation files are missing, unexpected, hand-edited, or stale relative to canonical sources or renderer behavior. Rendering validates before replacement and restores the previous presentation if the directory swap fails.

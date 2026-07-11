@@ -13,7 +13,7 @@ metadata:
 
 Create or update a portable discovery workspace whose structured records remain canonical and whose committed HTML helps humans understand and review the work.
 
-Read [`references/discovery-workspace.md`](references/discovery-workspace.md) before creating the workspace. Use the self-contained `scripts/render_discovery.ts` for deterministic JSON-based rendering with Node.js and `tsx`.
+Read [`references/discovery-workspace.md`](references/discovery-workspace.md) before creating the workspace. Use the self-contained `scripts/render_discovery.ts` for deterministic JSON-based rendering directly with Node.js 24 or newer.
 
 ## Workflow
 
@@ -45,8 +45,8 @@ Detailed views must expose stable `data-record-id` and `data-field` anchors. Esc
 From an installed skill directory, invoke the bundled renderer:
 
 ```bash
-npx tsx scripts/render_discovery.ts path/to/workspace
-npx tsx scripts/render_discovery.ts path/to/workspace --check
+node scripts/render_discovery.ts path/to/workspace
+node scripts/render_discovery.ts path/to/workspace --check
 ```
 
 If a project already has an equivalent renderer, preserve its stack and verify the same invariants rather than replacing it automatically.

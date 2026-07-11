@@ -1,6 +1,6 @@
-#!/usr/bin/env -S npx tsx
-export * from "../skills/discovery-artifact-presentation/scripts/render_discovery.js";
-import { main } from "../skills/discovery-artifact-presentation/scripts/render_discovery.js";
+#!/usr/bin/env node
+export * from "../skills/discovery-artifact-presentation/scripts/render_discovery.ts";
+import { main } from "../skills/discovery-artifact-presentation/scripts/render_discovery.ts";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
