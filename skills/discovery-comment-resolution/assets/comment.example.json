@@ -5,9 +5,9 @@
     "record_type": "problem-hypothesis",
     "field": "difficulty"
   },
-  "selection": {"exact": "", "prefix": "", "suffix": ""},
+  "selection": { "exact": "", "prefix": "", "suffix": "" },
   "body": "",
-  "author": {"github": ""},
+  "author": { "github": "" },
   "created_at": "",
   "status": "open",
   "resolution": null

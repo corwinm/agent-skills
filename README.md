@@ -26,18 +26,18 @@ Compatible agents and marketplaces can discover each directory containing a `SKI
 
 Skills for helping software teams turn requested solutions into traceable, evidence-backed problem decisions.
 
-| Skill | Purpose |
-| --- | --- |
-| `solution-request-triage` | Separate a requested solution from the problem and decide whether discovery is needed. |
-| `adaptive-discovery-intake` | Conduct an asynchronous, adaptive conversation with a requester. |
-| `discovery-plan-design` | Plan interviews, observations, document review, and data collection around uncertainty. |
-| `discovery-evidence-extraction` | Extract traceable evidence from interviews, notes, tickets, and observations. |
-| `problem-synthesis` | Form competing problem hypotheses without erasing contradictions. |
-| `problem-framing-review` | Facilitate stakeholder review, dissent, and readiness decisions. |
-| `experiment-increment-design` | Design the cheapest useful experiment or smallest valuable increment. |
-| `evidence-backed-problem-brief` | Assemble a concise decision brief grounded in cited evidence. |
-| `discovery-artifact-presentation` | Organize canonical discovery records and render a committed HTML review workspace. |
-| `discovery-comment-resolution` | Consume structured review comments and update artifacts under a risk-based authority policy. |
+| Skill                             | Purpose                                                                                      |
+| --------------------------------- | -------------------------------------------------------------------------------------------- |
+| `solution-request-triage`         | Separate a requested solution from the problem and decide whether discovery is needed.       |
+| `adaptive-discovery-intake`       | Conduct an asynchronous, adaptive conversation with a requester.                             |
+| `discovery-plan-design`           | Plan interviews, observations, document review, and data collection around uncertainty.      |
+| `discovery-evidence-extraction`   | Extract traceable evidence from interviews, notes, tickets, and observations.                |
+| `problem-synthesis`               | Form competing problem hypotheses without erasing contradictions.                            |
+| `problem-framing-review`          | Facilitate stakeholder review, dissent, and readiness decisions.                             |
+| `experiment-increment-design`     | Design the cheapest useful experiment or smallest valuable increment.                        |
+| `evidence-backed-problem-brief`   | Assemble a concise decision brief grounded in cited evidence.                                |
+| `discovery-artifact-presentation` | Organize canonical discovery records and render a committed HTML review workspace.           |
+| `discovery-comment-resolution`    | Consume structured review comments and update artifacts under a risk-based authority policy. |
 
 These skills support a mixed workflow: an agent can conduct initial asynchronous intake, then assist a human facilitator with research, synthesis, alignment, and experiment design. They do not replace product judgment or claim to discover the “real problem” automatically.
 
@@ -85,12 +85,11 @@ Validate all skills:
 npm run validate
 ```
 
-Run renderer tests and verify the example presentation is current:
+Run formatting, type-checking, tests, validation, and the generated presentation check:
 
 ```bash
-npm run typecheck
-npm test
-npm run check:example
+npm run format
+npm run check
 ```
 
 Contributions should include a concrete scenario showing how the change improves agent behavior. See [CONTRIBUTING.md](CONTRIBUTING.md).

@@ -13,7 +13,6 @@ metadata:
 
 Use [`references/discovery-artifact.md`](references/discovery-artifact.md) when creating or exchanging structured discovery records.
 
-
 Design the smallest credible research plan that can change a decision. Do not default to a fixed number of interviews or a broad research program.
 
 ## Workflow
@@ -59,4 +58,3 @@ Produce a compact plan containing:
 - [ ] Methods fit the type of question
 - [ ] Stopping conditions are explicit
 - [ ] Evidence capture preserves provenance
-

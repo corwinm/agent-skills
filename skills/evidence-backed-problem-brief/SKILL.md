@@ -13,7 +13,6 @@ metadata:
 
 Use [`references/discovery-artifact.md`](references/discovery-artifact.md) when creating or exchanging structured discovery records.
 
-
 Assemble a decision-ready brief from existing discovery records. This skill does not repair missing discovery by writing plausible prose; it exposes gaps and recommends how to address them.
 
 ## Preconditions
@@ -65,4 +64,3 @@ Keep the main brief short enough to read before a decision meeting. Move detaile
 - [ ] Alternatives and trade-offs are visible
 - [ ] Recommendation includes a decision or revisit condition
 - [ ] Missing evidence produced a gap report rather than invented certainty
-

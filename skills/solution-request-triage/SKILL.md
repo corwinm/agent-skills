@@ -13,7 +13,6 @@ metadata:
 
 Use [`references/discovery-artifact.md`](references/discovery-artifact.md) when creating or exchanging structured discovery records.
 
-
 Turn a solution-shaped request into a transparent assessment without pretending the agent already knows the underlying problem. Do not rewrite or discard the original request.
 
 ## Workflow
@@ -55,4 +54,3 @@ Do not make the requester complete a long generic questionnaire when an adaptive
 - [ ] Missing stakeholder perspectives are explicit
 - [ ] Recommendation matches the uncertainty and reversibility involved
 - [ ] No implementation backlog was generated without a decision
-

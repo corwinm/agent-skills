@@ -13,7 +13,6 @@ metadata:
 
 Use [`references/discovery-artifact.md`](references/discovery-artifact.md) when creating or exchanging structured discovery records.
 
-
 Help stakeholders inspect how a problem frame was derived and make an explicit readiness decision. Alignment means shared understanding of evidence and disagreements, not universal agreement.
 
 ## Workflow
@@ -51,4 +50,3 @@ Help stakeholders inspect how a problem frame was derived and make an explicit r
 - [ ] Accepted risks and assumptions are visible
 - [ ] Next action has a completion or revisit condition
 - [ ] Participants can correct the decision record
-

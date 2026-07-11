@@ -14,9 +14,8 @@ Each skill lives at `skills/<skill-name>/SKILL.md` and follows the [Agent Skills
 ## Validation
 
 ```bash
-npm run validate
-npm test
-npm run typecheck
+npm run format
+npm run check
 ```
 
 If discovery workspace behavior changes, regenerate the example and verify it is current:

@@ -13,7 +13,6 @@ metadata:
 
 Use [`references/discovery-artifact.md`](references/discovery-artifact.md) when creating or exchanging structured discovery records.
 
-
 Convert source material into traceable discovery records without manufacturing certainty or stripping statements from context.
 
 ## Workflow
@@ -50,5 +49,3 @@ For each interpretation include: statement, contributing evidence IDs, author, a
 - [ ] Claims made on behalf of others are marked
 - [ ] Contradictions and limitations are preserved
 - [ ] Source material can be revisited to audit important claims
-
-

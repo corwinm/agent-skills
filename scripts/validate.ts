@@ -24,18 +24,27 @@ export function validate(path: string): string[] {
   const name = scalar(frontmatter, "name");
   const description = scalar(frontmatter, "description");
   if (!name) errors.push("name is required");
-  else if (!NAME_RE.test(name) || name.length > 64) errors.push("name must be <=64 lowercase alphanumeric/hyphen characters");
-  else if (name !== dirname(path).split("/").at(-1)) errors.push(`name '${name}' must match directory '${dirname(path).split("/").at(-1)}'`);
+  else if (!NAME_RE.test(name) || name.length > 64)
+    errors.push("name must be <=64 lowercase alphanumeric/hyphen characters");
+  else if (name !== dirname(path).split("/").at(-1))
+    errors.push(`name '${name}' must match directory '${dirname(path).split("/").at(-1)}'`);
   if (!description) errors.push("description is required");
   else if (description.length > 1024) errors.push("description exceeds 1024 characters");
   if (!body) errors.push("body is required");
-  if (text.split(/\r?\n/).length - (text.endsWith("\n") ? 1 : 0) > 500) errors.push("SKILL.md exceeds the recommended 500 lines");
+  if (text.split(/\r?\n/).length - (text.endsWith("\n") ? 1 : 0) > 500)
+    errors.push("SKILL.md exceeds the recommended 500 lines");
   return errors;
 }
 
 export function main(): number {
-  const paths = readdirSync(SKILLS, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => join(SKILLS, entry.name, "SKILL.md")).sort();
-  if (paths.length === 0) { console.error("No skills found"); return 1; }
+  const paths = readdirSync(SKILLS, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => join(SKILLS, entry.name, "SKILL.md"))
+    .sort();
+  if (paths.length === 0) {
+    console.error("No skills found");
+    return 1;
+  }
   let failed = false;
   for (const path of paths) {
     const errors = validate(path);
@@ -48,4 +57,5 @@ export function main(): number {
   return Number(failed);
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) process.exitCode = main();
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1])
+  process.exitCode = main();

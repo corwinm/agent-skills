@@ -6,15 +6,9 @@
     "goal": "Determine whether a named fix is available",
     "difficulty": "Existing deployment state requires developer interpretation",
     "consequence": "Customer responses are delayed and engineering is interrupted",
-    "supporting_evidence_ids": [
-      "evidence-001",
-      "evidence-002"
-    ],
+    "supporting_evidence_ids": ["evidence-001", "evidence-002"],
     "contradicting_evidence_ids": [],
-    "unknowns": [
-      "Monthly request frequency",
-      "Whether other support groups share the need"
-    ],
+    "unknowns": ["Monthly request frequency", "Whether other support groups share the need"],
     "status": "leading"
   },
   {
@@ -26,9 +20,7 @@
     "consequence": "Portfolio reporting requires manual collection",
     "supporting_evidence_ids": [],
     "contradicting_evidence_ids": [],
-    "unknowns": [
-      "Which decision this visibility would inform"
-    ],
+    "unknowns": ["Which decision this visibility would inform"],
     "status": "candidate"
   }
 ]

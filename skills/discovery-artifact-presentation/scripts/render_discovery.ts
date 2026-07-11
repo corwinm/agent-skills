@@ -1,43 +1,75 @@
 #!/usr/bin/env node
 /** Render a portable discovery workspace into deterministic committed HTML. */
 import { createHash, randomUUID } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  renameSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const VERSION = "0.1.0";
-const SOURCE_FILES = ["discovery.json", "records/evidence.json", "records/hypotheses.json", "records/decisions.json", "records/experiments.json", "history/revisions.json"];
-const PAGES = ["index.html", "evidence.html", "hypotheses.html", "decisions.html", "experiment.html", "review.html"];
+const SOURCE_FILES = [
+  "discovery.json",
+  "records/evidence.json",
+  "records/hypotheses.json",
+  "records/decisions.json",
+  "records/experiments.json",
+  "history/revisions.json",
+];
+const PAGES = [
+  "index.html",
+  "evidence.html",
+  "hypotheses.html",
+  "decisions.html",
+  "experiment.html",
+  "review.html",
+];
 type RecordValue = Record<string, unknown>;
 type Workspace = Record<string, any>;
 type Rename = (oldPath: string, newPath: string) => void;
 
-export class WorkspaceError extends Error { override name = "WorkspaceError"; }
+export class WorkspaceError extends Error {
+  override name = "WorkspaceError";
+}
 
-function posix(path: string): string { return path.split(sep).join("/"); }
+function posix(path: string): string {
+  return path.split(sep).join("/");
+}
 function readJson(path: string, fallback?: unknown): unknown {
   if (!existsSync(path) && arguments.length > 1) return fallback;
-  try { return JSON.parse(readFileSync(path, "utf8")); }
-  catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") throw new WorkspaceError(`Required file not found: ${path}`);
+  try {
+    return JSON.parse(readFileSync(path, "utf8"));
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT")
+      throw new WorkspaceError(`Required file not found: ${path}`);
     throw new WorkspaceError(`Invalid JSON in ${path}: ${(error as Error).message}`);
   }
 }
 function mapping(value: unknown, label: string): RecordValue {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) throw new WorkspaceError(`${label} must be a JSON object`);
+  if (typeof value !== "object" || value === null || Array.isArray(value))
+    throw new WorkspaceError(`${label} must be a JSON object`);
   return value as RecordValue;
 }
 function records(value: unknown, label: string): RecordValue[] {
   if (!Array.isArray(value)) throw new WorkspaceError(`${label} must be a JSON array`);
   return value.map((item, index) => {
     const record = mapping(item, `${label}[${index}]`);
-    if (typeof record.id !== "string" || !record.id.trim()) throw new WorkspaceError(`${label}[${index}] requires a non-empty id`);
+    if (typeof record.id !== "string" || !record.id.trim())
+      throw new WorkspaceError(`${label}[${index}] requires a non-empty id`);
     return record;
   });
 }
 function stringList(record: RecordValue, field: string, label: string): void {
   const value = record[field] ?? [];
-  if (!Array.isArray(value) || !value.every((item) => typeof item === "string")) throw new WorkspaceError(`${label}.${field} must be an array of strings`);
+  if (!Array.isArray(value) || !value.every((item) => typeof item === "string"))
+    throw new WorkspaceError(`${label}.${field} must be an array of strings`);
 }
 function filesRecursively(root: string): string[] {
   if (!existsSync(root)) return [];
@@ -48,48 +80,113 @@ function filesRecursively(root: string): string[] {
 }
 export function loadWorkspace(root: string): Workspace {
   const discovery = mapping(readJson(join(root, "discovery.json")), "discovery.json");
-  for (const field of ["id", "title", "updated_at", "request"]) if (!(field in discovery)) throw new WorkspaceError(`discovery.json requires ${field}`);
+  for (const field of ["id", "title", "updated_at", "request"])
+    if (!(field in discovery)) throw new WorkspaceError(`discovery.json requires ${field}`);
   const request = mapping(discovery.request, "discovery.request");
   if (!request.id) throw new WorkspaceError("discovery.request requires id");
   const review = mapping(discovery.review ?? {}, "discovery.review");
   const authority = review.authority ?? "risk-based";
-  if (!["automatic", "proposal-only", "risk-based"].includes(String(authority))) throw new WorkspaceError(`Unknown review authority: ${authority}`);
-  const evidence = records(readJson(join(root, "records/evidence.json"), []), "records/evidence.json");
-  const hypotheses = records(readJson(join(root, "records/hypotheses.json"), []), "records/hypotheses.json");
-  const decisions = records(readJson(join(root, "records/decisions.json"), []), "records/decisions.json");
-  const experiments = records(readJson(join(root, "records/experiments.json"), []), "records/experiments.json");
-  const revisions = records(readJson(join(root, "history/revisions.json"), []), "history/revisions.json");
+  if (!["automatic", "proposal-only", "risk-based"].includes(String(authority)))
+    throw new WorkspaceError(`Unknown review authority: ${authority}`);
+  const evidence = records(
+    readJson(join(root, "records/evidence.json"), []),
+    "records/evidence.json",
+  );
+  const hypotheses = records(
+    readJson(join(root, "records/hypotheses.json"), []),
+    "records/hypotheses.json",
+  );
+  const decisions = records(
+    readJson(join(root, "records/decisions.json"), []),
+    "records/decisions.json",
+  );
+  const experiments = records(
+    readJson(join(root, "records/experiments.json"), []),
+    "records/experiments.json",
+  );
+  const revisions = records(
+    readJson(join(root, "history/revisions.json"), []),
+    "history/revisions.json",
+  );
   for (const record of evidence) stringList(record, "limitations", String(record.id));
-  for (const record of hypotheses) for (const field of ["supporting_evidence_ids", "contradicting_evidence_ids", "unknowns"]) stringList(record, field, String(record.id));
-  for (const record of decisions) for (const field of ["alternatives", "unresolved_dissent"]) stringList(record, field, String(record.id));
+  for (const record of hypotheses)
+    for (const field of ["supporting_evidence_ids", "contradicting_evidence_ids", "unknowns"])
+      stringList(record, field, String(record.id));
+  for (const record of decisions)
+    for (const field of ["alternatives", "unresolved_dissent"])
+      stringList(record, field, String(record.id));
   for (const record of experiments) stringList(record, "signals", String(record.id));
   const commentsDir = join(root, "comments");
-  const comments = existsSync(commentsDir) ? readdirSync(commentsDir).filter((name) => name.endsWith(".json")).sort().map((name) => {
-    const comment = mapping(readJson(join(commentsDir, name)), posix(relative(root, join(commentsDir, name))));
-    if (!comment.id) throw new WorkspaceError(`${posix(relative(root, join(commentsDir, name)))} requires id`);
-    const target = mapping(comment.target, `${name}.target`);
-    if (!target.record_id || !target.field) throw new WorkspaceError(`${posix(relative(root, join(commentsDir, name)))} target requires record_id and field`);
-    return comment;
-  }) : [];
+  const comments = existsSync(commentsDir)
+    ? readdirSync(commentsDir)
+        .filter((name) => name.endsWith(".json"))
+        .sort()
+        .map((name) => {
+          const comment = mapping(
+            readJson(join(commentsDir, name)),
+            posix(relative(root, join(commentsDir, name))),
+          );
+          if (!comment.id)
+            throw new WorkspaceError(
+              `${posix(relative(root, join(commentsDir, name)))} requires id`,
+            );
+          const target = mapping(comment.target, `${name}.target`);
+          if (!target.record_id || !target.field)
+            throw new WorkspaceError(
+              `${posix(relative(root, join(commentsDir, name)))} target requires record_id and field`,
+            );
+          return comment;
+        })
+    : [];
   const collections = [evidence, hypotheses, decisions, experiments, revisions];
   const ids = [String(request.id), ...collections.flat().map((record) => String(record.id))];
   const duplicates = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))].sort();
   if (duplicates.length) throw new WorkspaceError(`Duplicate record ids: ${duplicates.join(", ")}`);
-  const recordsById = Object.fromEntries([request, evidence, hypotheses, decisions, experiments].flat(2).map((record: RecordValue) => [String(record.id), record]));
+  const recordsById = Object.fromEntries(
+    [request, evidence, hypotheses, decisions, experiments]
+      .flat(2)
+      .map((record: RecordValue) => [String(record.id), record]),
+  );
   for (const comment of comments) {
-    const target = comment.target as RecordValue; const record = recordsById[String(target.record_id)];
-    if (!record) throw new WorkspaceError(`Comment ${comment.id} targets unknown record ${target.record_id}`);
-    if (!(String(target.field) in record)) throw new WorkspaceError(`Comment ${comment.id} targets unknown field ${target.field} on ${target.record_id}`);
+    const target = comment.target as RecordValue;
+    const record = recordsById[String(target.record_id)];
+    if (!record)
+      throw new WorkspaceError(`Comment ${comment.id} targets unknown record ${target.record_id}`);
+    if (!(String(target.field) in record))
+      throw new WorkspaceError(
+        `Comment ${comment.id} targets unknown field ${target.field} on ${target.record_id}`,
+      );
   }
   const commentIds = comments.map((comment) => String(comment.id));
-  const duplicateComments = [...new Set(commentIds.filter((id, index) => commentIds.indexOf(id) !== index))].sort();
-  if (duplicateComments.length) throw new WorkspaceError(`Duplicate comment ids: ${duplicateComments.join(", ")}`);
-  return { discovery, request, evidence, hypotheses, decisions, experiments, comments, revisions, recordsById };
+  const duplicateComments = [
+    ...new Set(commentIds.filter((id, index) => commentIds.indexOf(id) !== index)),
+  ].sort();
+  if (duplicateComments.length)
+    throw new WorkspaceError(`Duplicate comment ids: ${duplicateComments.join(", ")}`);
+  return {
+    discovery,
+    request,
+    evidence,
+    hypotheses,
+    decisions,
+    experiments,
+    comments,
+    revisions,
+    recordsById,
+  };
 }
 function sourcePaths(root: string): string[] {
   const paths = SOURCE_FILES.map((name) => join(root, name)).filter(existsSync);
-  const comments = join(root, "comments"); if (existsSync(comments)) paths.push(...readdirSync(comments).filter((name) => name.endsWith(".json")).map((name) => join(comments, name)));
-  const sources = join(root, "sources"); if (existsSync(sources)) paths.push(...filesRecursively(sources).filter((path) => statSync(path).isFile()));
+  const comments = join(root, "comments");
+  if (existsSync(comments))
+    paths.push(
+      ...readdirSync(comments)
+        .filter((name) => name.endsWith(".json"))
+        .map((name) => join(comments, name)),
+    );
+  const sources = join(root, "sources");
+  if (existsSync(sources))
+    paths.push(...filesRecursively(sources).filter((path) => statSync(path).isFile()));
   return paths.sort((a, b) => {
     const left = posix(relative(root, a));
     const right = posix(relative(root, b));
@@ -99,17 +196,56 @@ function sourcePaths(root: string): string[] {
 export function sourceDigest(root: string): string {
   const hash = createHash("sha256");
   for (const path of sourcePaths(root)) {
-    const name = Buffer.from(posix(relative(root, path))); const content = readFileSync(path); const length = Buffer.alloc(8);
-    length.writeBigUInt64BE(BigInt(name.length)); hash.update(length); hash.update(name); length.writeBigUInt64BE(BigInt(content.length)); hash.update(length); hash.update(content);
+    const name = Buffer.from(posix(relative(root, path)));
+    const content = readFileSync(path);
+    const length = Buffer.alloc(8);
+    length.writeBigUInt64BE(BigInt(name.length));
+    hash.update(length);
+    hash.update(name);
+    length.writeBigUInt64BE(BigInt(content.length));
+    hash.update(length);
+    hash.update(content);
   }
   return `sha256:${hash.digest("hex")}`;
 }
-function e(value: unknown): string { return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#x27;"); }
-function listItems(values: unknown, empty = "None recorded"): string { return !Array.isArray(values) || !values.length ? `<p class="empty">${e(empty)}</p>` : `<ul>${values.map((value) => `<li>${e(value)}</li>`).join("")}</ul>`; }
-function attrs(id: unknown, field?: string): string { return `data-record-id="${e(id)}"${field ? ` data-field="${e(field)}"` : ""}`; }
-function field(label: string, value: unknown, id: unknown, name: string): string { return `<div class="field" ${attrs(id, name)}><span class="field-label">${e(label)}</span><p>${e(value) || "<span class=empty>Not recorded</span>"}</p></div>`; }
-function nav(active: string): string { return `<nav aria-label="Artifact views">${[["Overview","index.html"],["Evidence","evidence.html"],["Hypotheses","hypotheses.html"],["Decisions","decisions.html"],["Experiment","experiment.html"],["Review","review.html"]].map(([label, href]) => `<a href="${href}"${href === active ? " aria-current=page" : ""}>${label}</a>`).join("")}</nav>`; }
-function page(title: string, active: string, w: Workspace, body: string): string { const d=w.discovery; const count=w.comments.filter((c:RecordValue)=>c.status==="open").length; return `<!doctype html>
+function e(value: unknown): string {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#x27;");
+}
+function listItems(values: unknown, empty = "None recorded"): string {
+  return !Array.isArray(values) || !values.length
+    ? `<p class="empty">${e(empty)}</p>`
+    : `<ul>${values.map((value) => `<li>${e(value)}</li>`).join("")}</ul>`;
+}
+function attrs(id: unknown, field?: string): string {
+  return `data-record-id="${e(id)}"${field ? ` data-field="${e(field)}"` : ""}`;
+}
+function field(label: string, value: unknown, id: unknown, name: string): string {
+  return `<div class="field" ${attrs(id, name)}><span class="field-label">${e(label)}</span><p>${e(value) || "<span class=empty>Not recorded</span>"}</p></div>`;
+}
+function nav(active: string): string {
+  return `<nav aria-label="Artifact views">${[
+    ["Overview", "index.html"],
+    ["Evidence", "evidence.html"],
+    ["Hypotheses", "hypotheses.html"],
+    ["Decisions", "decisions.html"],
+    ["Experiment", "experiment.html"],
+    ["Review", "review.html"],
+  ]
+    .map(
+      ([label, href]) =>
+        `<a href="${href}"${href === active ? " aria-current=page" : ""}>${label}</a>`,
+    )
+    .join("")}</nav>`;
+}
+function page(title: string, active: string, w: Workspace, body: string): string {
+  const d = w.discovery;
+  const count = w.comments.filter((c: RecordValue) => c.status === "open").length;
+  return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -136,33 +272,53 @@ function page(title: string, active: string, w: Workspace, body: string): string
   <footer>Updated ${e(d.updated_at)} · Workspace ${e(d.id)}</footer>
 </body>
 </html>
-`; }
-function renderIndex(w: Workspace): string { const d=w.discovery, r=w.request, hs=w.hypotheses; const leading=hs.find((x:RecordValue)=>x.status==="leading")??hs[0]; const hypothesis=leading?`
+`;
+}
+function renderIndex(w: Workspace): string {
+  const d = w.discovery,
+    r = w.request,
+    hs = w.hypotheses;
+  const leading = hs.find((x: RecordValue) => x.status === "leading") ?? hs[0];
+  const hypothesis = leading
+    ? `
         <article class="hypothesis" ${attrs(leading.id)}>
           <span class="record-id">${e(leading.id)}</span>
-          <h3>${e(leading.affected_group??"Problem hypothesis")}</h3>
-          ${field("Situation",leading.situation,leading.id,"situation")}
-          ${field("Difficulty",leading.difficulty,leading.id,"difficulty")}
-          ${field("Consequence",leading.consequence,leading.id,"consequence")}
+          <h3>${e(leading.affected_group ?? "Problem hypothesis")}</h3>
+          ${field("Situation", leading.situation, leading.id, "situation")}
+          ${field("Difficulty", leading.difficulty, leading.id, "difficulty")}
+          ${field("Consequence", leading.consequence, leading.id, "consequence")}
           <a class="text-link" href="hypotheses.html#${e(leading.id)}">Inspect hypothesis →</a>
-        </article>`:'<p class="empty">No problem hypothesis recorded.</p>'; const evidence=w.evidence.slice(0,2).map((x:RecordValue)=>`<article class="evidence-summary" ${attrs(x.id)}>
+        </article>`
+    : '<p class="empty">No problem hypothesis recorded.</p>';
+  const evidence =
+    w.evidence
+      .slice(0, 2)
+      .map(
+        (x: RecordValue) => `<article class="evidence-summary" ${attrs(x.id)}>
           <span class="record-id">${e(x.id)}</span>
-          <p ${attrs(x.id,"statement")}>${e(x.statement??"")}</p>
-          <div><strong>Limitations</strong>${listItems(x.limitations,"No limitations recorded")}</div>
-        </article>`).join("")||'<p class="empty">No evidence recorded.</p>'; return page("Overview","index.html",w,`
+          <p ${attrs(x.id, "statement")}>${e(x.statement ?? "")}</p>
+          <div><strong>Limitations</strong>${listItems(x.limitations, "No limitations recorded")}</div>
+        </article>`,
+      )
+      .join("") || '<p class="empty">No evidence recorded.</p>';
+  return page(
+    "Overview",
+    "index.html",
+    w,
+    `
     <section class="decision-banner">
       <span class="eyebrow">Decision needed</span>
-      <h2>${e(d.decision_needed??"No decision recorded")}</h2>
-      <p>${e(d.recommendation??"No recommendation recorded")}</p>
+      <h2>${e(d.decision_needed ?? "No decision recorded")}</h2>
+      <p>${e(d.recommendation ?? "No recommendation recorded")}</p>
       <a class="decision-action" href="experiment.html">Review proposed experiment →</a>
     </section>
     <div class="overview-grid">
       <section class="panel" ${attrs(r.id)}>
         <span class="eyebrow">Original request</span>
-        <blockquote ${attrs(r.id,"verbatim")}>${e(r.verbatim??"")}</blockquote>
+        <blockquote ${attrs(r.id, "verbatim")}>${e(r.verbatim ?? "")}</blockquote>
         <dl>
-          <div><dt>Requester</dt><dd>${e(r.requester??"Unknown")}</dd></div>
-          <div><dt>Proposed solution</dt><dd>${e(r.proposed_solution??"Not recorded")}</dd></div>
+          <div><dt>Requester</dt><dd>${e(r.requester ?? "Unknown")}</dd></div>
+          <div><dt>Proposed solution</dt><dd>${e(r.proposed_solution ?? "Not recorded")}</dd></div>
         </dl>
       </section>
       <section class="panel">
@@ -178,60 +334,151 @@ function renderIndex(w: Workspace): string { const d=w.discovery, r=w.request, h
       <a href="evidence.html"><strong>${w.evidence.length}</strong><span>Evidence records</span></a>
       <a href="hypotheses.html"><strong>${hs.length}</strong><span>Problem hypotheses</span></a>
       <a href="decisions.html"><strong>${w.decisions.length}</strong><span>Decisions</span></a>
-      <a href="review.html"><strong>${w.comments.filter((c:RecordValue)=>c.status==="open").length}</strong><span>Open comments</span></a>
+      <a href="review.html"><strong>${w.comments.filter((c: RecordValue) => c.status === "open").length}</strong><span>Open comments</span></a>
     </section>
-    `); }
-function renderEvidence(w:Workspace):string { const cards=w.evidence.map((r:RecordValue)=>`
+    `,
+  );
+}
+function renderEvidence(w: Workspace): string {
+  const cards = w.evidence
+    .map(
+      (r: RecordValue) => `
         <article class="record" id="${e(r.id)}" ${attrs(r.id)}>
-          <div class="record-heading"><span class="record-id">${e(r.id)}</span><span class="tag">${e(r.type??"evidence")}</span></div>
-          <h2 ${attrs(r.id,"statement")}>${e(r.statement??"")}</h2>
-          <dl><div><dt>Source</dt><dd>${e(r.source_id??"Unknown")}</dd></div></dl>
-          <h3>Limitations</h3>${listItems(r.limitations,"No limitations recorded")}
-        </article>`).join(""); return page("Evidence","evidence.html",w,'<header class="page-intro"><span class="eyebrow">Inspect</span><h2>Evidence</h2><p>Source-linked observations and statements. Limitations remain visible.</p></header>'+(cards||'<p class="empty">No evidence recorded.</p>')); }
-function renderHypotheses(w:Workspace):string { const cards=w.hypotheses.map((r:RecordValue)=>`
+          <div class="record-heading"><span class="record-id">${e(r.id)}</span><span class="tag">${e(r.type ?? "evidence")}</span></div>
+          <h2 ${attrs(r.id, "statement")}>${e(r.statement ?? "")}</h2>
+          <dl><div><dt>Source</dt><dd>${e(r.source_id ?? "Unknown")}</dd></div></dl>
+          <h3>Limitations</h3>${listItems(r.limitations, "No limitations recorded")}
+        </article>`,
+    )
+    .join("");
+  return page(
+    "Evidence",
+    "evidence.html",
+    w,
+    '<header class="page-intro"><span class="eyebrow">Inspect</span><h2>Evidence</h2><p>Source-linked observations and statements. Limitations remain visible.</p></header>' +
+      (cards || '<p class="empty">No evidence recorded.</p>'),
+  );
+}
+function renderHypotheses(w: Workspace): string {
+  const cards = w.hypotheses
+    .map(
+      (r: RecordValue) => `
         <article class="record hypothesis-detail" id="${e(r.id)}" ${attrs(r.id)}>
-          <div class="record-heading"><span class="record-id">${e(r.id)}</span><span class="tag">${e(r.status??"candidate")}</span></div>
-          <h2>${e(r.affected_group??"Problem hypothesis")}</h2>
-          ${field("Situation",r.situation,r.id,"situation")}
-          ${field("Goal",r.goal,r.id,"goal")}
-          ${field("Difficulty",r.difficulty,r.id,"difficulty")}
-          ${field("Consequence",r.consequence,r.id,"consequence")}
+          <div class="record-heading"><span class="record-id">${e(r.id)}</span><span class="tag">${e(r.status ?? "candidate")}</span></div>
+          <h2>${e(r.affected_group ?? "Problem hypothesis")}</h2>
+          ${field("Situation", r.situation, r.id, "situation")}
+          ${field("Goal", r.goal, r.id, "goal")}
+          ${field("Difficulty", r.difficulty, r.id, "difficulty")}
+          ${field("Consequence", r.consequence, r.id, "consequence")}
           <div class="evidence-columns">
             <div><h3>Supporting evidence</h3>${listItems(r.supporting_evidence_ids)}</div>
             <div><h3>Contradicting evidence</h3>${listItems(r.contradicting_evidence_ids)}</div>
           </div>
           <h3>Unknowns</h3>${listItems(r.unknowns)}
-        </article>`).join(""); return page("Hypotheses","hypotheses.html",w,'<header class="page-intro"><span class="eyebrow">Compare</span><h2>Problem hypotheses</h2><p>Competing frames retain support, contradiction, and uncertainty.</p></header><div class="record-grid">'+(cards||'<p class="empty">No hypotheses recorded.</p>')+'</div>'); }
-function renderDecisions(w:Workspace):string { const cards=w.decisions.map((r:RecordValue)=>`
+        </article>`,
+    )
+    .join("");
+  return page(
+    "Hypotheses",
+    "hypotheses.html",
+    w,
+    '<header class="page-intro"><span class="eyebrow">Compare</span><h2>Problem hypotheses</h2><p>Competing frames retain support, contradiction, and uncertainty.</p></header><div class="record-grid">' +
+      (cards || '<p class="empty">No hypotheses recorded.</p>') +
+      "</div>",
+  );
+}
+function renderDecisions(w: Workspace): string {
+  const cards = w.decisions
+    .map(
+      (r: RecordValue) => `
         <article class="record" id="${e(r.id)}" ${attrs(r.id)}>
           <span class="record-id">${e(r.id)}</span>
-          <h2 ${attrs(r.id,"decision")}>${e(r.decision??"")}</h2>
-          ${field("Owner",r.owner,r.id,"owner")}
-          ${field("Rationale",r.rationale,r.id,"rationale")}
+          <h2 ${attrs(r.id, "decision")}>${e(r.decision ?? "")}</h2>
+          ${field("Owner", r.owner, r.id, "owner")}
+          ${field("Rationale", r.rationale, r.id, "rationale")}
           <h3>Alternatives considered</h3>${listItems(r.alternatives)}
           <h3>Unresolved dissent</h3>${listItems(r.unresolved_dissent)}
-        </article>`).join(""); const revisions=[...w.revisions].reverse().map((r:RecordValue)=>`<li><span>${e(r.created_at??"")}</span><strong>${e(r.summary??"")}</strong><code>${e(r.id)}</code></li>`).join(""); return page("Decisions","decisions.html",w,'<header class="page-intro"><span class="eyebrow">Audit</span><h2>Decisions and revisions</h2><p>Choices, rationale, dissent, and changes remain reviewable.</p></header>'+(cards||'<p class="empty">No decisions recorded.</p>')+`<section class="panel revision-panel"><h2>Revision history</h2><ol class="timeline">${revisions||"<li>No revisions recorded.</li>"}</ol></section>`); }
-function renderExperiment(w:Workspace):string { const cards=w.experiments.map((r:RecordValue)=>`
+        </article>`,
+    )
+    .join("");
+  const revisions = [...w.revisions]
+    .reverse()
+    .map(
+      (r: RecordValue) =>
+        `<li><span>${e(r.created_at ?? "")}</span><strong>${e(r.summary ?? "")}</strong><code>${e(r.id)}</code></li>`,
+    )
+    .join("");
+  return page(
+    "Decisions",
+    "decisions.html",
+    w,
+    '<header class="page-intro"><span class="eyebrow">Audit</span><h2>Decisions and revisions</h2><p>Choices, rationale, dissent, and changes remain reviewable.</p></header>' +
+      (cards || '<p class="empty">No decisions recorded.</p>') +
+      `<section class="panel revision-panel"><h2>Revision history</h2><ol class="timeline">${revisions || "<li>No revisions recorded.</li>"}</ol></section>`,
+  );
+}
+function renderExperiment(w: Workspace): string {
+  const cards = w.experiments
+    .map(
+      (r: RecordValue) => `
         <article class="record" id="${e(r.id)}" ${attrs(r.id)}>
           <span class="record-id">${e(r.id)}</span>
-          <h2>${e(r.intervention??"Experiment")}</h2>
-          ${field("Critical assumption",r.critical_assumption,r.id,"critical_assumption")}
+          <h2>${e(r.intervention ?? "Experiment")}</h2>
+          ${field("Critical assumption", r.critical_assumption, r.id, "critical_assumption")}
           <h3>Signals</h3>${listItems(r.signals)}
-          ${field("Decision rule",r.decision_rule,r.id,"decision_rule")}
-          <p class="linked-record">Tests <a href="hypotheses.html#${e(r.problem_hypothesis_id??"")}">${e(r.problem_hypothesis_id??"Unknown hypothesis")}</a></p>
-        </article>`).join(""); return page("Experiment","experiment.html",w,'<header class="page-intro"><span class="eyebrow">Act and learn</span><h2>Experiment or increment</h2><p>The next action is tied to an assumption and a decision rule.</p></header>'+(cards||'<p class="empty">No experiment recorded.</p>')); }
-function renderReview(w:Workspace):string { const review=w.discovery.review??{}; const url=review.repository&&review.pull_request?`https://github.com/${review.repository}/pull/${review.pull_request}`:undefined; const cards=w.comments.map((c:RecordValue)=>{const t=c.target as RecordValue,s=(c.selection??{}) as RecordValue,a=(c.author??{}) as RecordValue,status=c.status??"open"; return `
-        <article class="comment ${e(status)}" id="${e(c.id)}" ${attrs(t.record_id,String(t.field))}>
+          ${field("Decision rule", r.decision_rule, r.id, "decision_rule")}
+          <p class="linked-record">Tests <a href="hypotheses.html#${e(r.problem_hypothesis_id ?? "")}">${e(r.problem_hypothesis_id ?? "Unknown hypothesis")}</a></p>
+        </article>`,
+    )
+    .join("");
+  return page(
+    "Experiment",
+    "experiment.html",
+    w,
+    '<header class="page-intro"><span class="eyebrow">Act and learn</span><h2>Experiment or increment</h2><p>The next action is tied to an assumption and a decision rule.</p></header>' +
+      (cards || '<p class="empty">No experiment recorded.</p>'),
+  );
+}
+function renderReview(w: Workspace): string {
+  const review = w.discovery.review ?? {};
+  const url =
+    review.repository && review.pull_request
+      ? `https://github.com/${review.repository}/pull/${review.pull_request}`
+      : undefined;
+  const cards = w.comments
+    .map((c: RecordValue) => {
+      const t = c.target as RecordValue,
+        s = (c.selection ?? {}) as RecordValue,
+        a = (c.author ?? {}) as RecordValue,
+        status = c.status ?? "open";
+      return `
+        <article class="comment ${e(status)}" id="${e(c.id)}" ${attrs(t.record_id, String(t.field))}>
           <div class="record-heading"><span class="record-id">${e(c.id)}</span><span class="tag">${e(status)}</span></div>
-          <p class="comment-target">${e(t.record_type??"record")} · ${e(t.record_id)} · ${e(t.field)}</p>
-          <blockquote>${e(s.exact??"No text selection recorded")}</blockquote>
-          <p class="comment-body">${e(c.body??"")}</p>
-          <div class="comment-meta"><span>@${e(a.github??"Unknown")}</span><time>${e(c.created_at??"")}</time>${url?`<a class="button" href="${e(url)}">Open pull request</a>`:""}</div>
-        </article>`;}).join(""); const authority=review.authority??"risk-based"; const policy:{[key:string]:string}={automatic:"The agent may apply review-driven changes and must record every revision.","proposal-only":"The agent proposes all review-driven changes for human approval.","risk-based":"Meaning-preserving corrections may be applied; material discovery changes require a proposal."}; return page("Review","review.html",w,`
+          <p class="comment-target">${e(t.record_type ?? "record")} · ${e(t.record_id)} · ${e(t.field)}</p>
+          <blockquote>${e(s.exact ?? "No text selection recorded")}</blockquote>
+          <p class="comment-body">${e(c.body ?? "")}</p>
+          <div class="comment-meta"><span>@${e(a.github ?? "Unknown")}</span><time>${e(c.created_at ?? "")}</time>${url ? `<a class="button" href="${e(url)}">Open pull request</a>` : ""}</div>
+        </article>`;
+    })
+    .join("");
+  const authority = review.authority ?? "risk-based";
+  const policy: { [key: string]: string } = {
+    automatic: "The agent may apply review-driven changes and must record every revision.",
+    "proposal-only": "The agent proposes all review-driven changes for human approval.",
+    "risk-based":
+      "Meaning-preserving corrections may be applied; material discovery changes require a proposal.",
+  };
+  return page(
+    "Review",
+    "review.html",
+    w,
+    `
     <header class="page-intro"><span class="eyebrow">Review</span><h2>Comments and agent revisions</h2><p>Comments keep stable record and field anchors plus selected-text context.</p></header>
     <section class="policy"><strong>Agent authority:</strong> ${e(authority)}. ${e(policy[String(authority)])}</section>
-    ${cards||'<p class="empty">No comments recorded.</p>'}
-    `); }
+    ${cards || '<p class="empty">No comments recorded.</p>'}
+    `,
+  );
+}
 const CSS = String.raw`:root { --paper: #f4f1ea; --surface: #fffdf8; --ink: #18201d; --muted: #66706b; --line: #d8d5cc; --accent: #176b55; --accent-soft: #dcece5; --warning: #8a5b12; --serif: Georgia, "Times New Roman", serif; --sans: ui-sans-serif, system-ui, sans-serif; }
 * { box-sizing: border-box; }
 html { color-scheme: light; background: var(--paper); }
@@ -282,33 +529,110 @@ dl { margin-bottom: 0; } dl div { border-top: 1px solid var(--line); padding: 12
 @media (max-width: 760px) { .app-header { align-items: start; flex-direction: column; } .overview-grid, .record-grid, .evidence-columns { grid-template-columns: 1fr; } .metrics { grid-template-columns: repeat(2, 1fr); } .metrics a:nth-child(2) { border-right: 0; } .metrics a { border-bottom: 1px solid var(--line); } .timeline li { grid-template-columns: 1fr; gap: 4px; } }
 @media (prefers-reduced-motion: no-preference) { a { transition: color .15s ease, background .15s ease; } }
 `;
-const JS = "// Presentation behavior is intentionally limited to accessible native HTML controls.\n";
-export function renderFiles(workspace:Workspace,digest:string):Map<string,Buffer> { const d=workspace.discovery; const manifest={workspace_id:d.id,renderer_version:VERSION,generated_at:d.updated_at,source_digest:digest,pages:PAGES,generated_files:[...PAGES,"artifact.css","artifact.js","manifest.json"]}; const values:Record<string,string>={"index.html":renderIndex(workspace),"evidence.html":renderEvidence(workspace),"hypotheses.html":renderHypotheses(workspace),"decisions.html":renderDecisions(workspace),"experiment.html":renderExperiment(workspace),"review.html":renderReview(workspace),"artifact.css":CSS,"artifact.js":JS,"manifest.json":JSON.stringify(manifest,Object.keys(manifest).sort(),2)+"\n"}; return new Map(Object.entries(values).map(([name,value])=>[name,Buffer.from(value)])); }
-export function checkCurrent(root:string,workspace:Workspace,digest:string):void { const presentation=join(root,"presentation"); if(!existsSync(presentation)) throw new WorkspaceError("Presentation is missing or stale; run the renderer"); const expected=renderFiles(workspace,digest); const actual=new Set(filesRecursively(presentation).map((path)=>posix(relative(presentation,path)))); const missing=[...expected.keys()].filter((name)=>!actual.has(name)).sort(); const unexpected=[...actual].filter((name)=>!expected.has(name)).sort(); const changed=[...expected].filter(([name,content])=>existsSync(join(presentation,name))&&!readFileSync(join(presentation,name)).equals(content)).map(([name])=>name).sort(); const problems=[]; if(missing.length)problems.push(`missing files: ${missing.join(", ")}`); if(unexpected.length)problems.push(`unexpected files: ${unexpected.join(", ")}`); if(changed.length)problems.push(`changed files: ${changed.join(", ")}`); if(problems.length)throw new WorkspaceError(`Presentation is stale; ${problems.join("; ")}`); }
-export function replacePresentation(root:string,files:Map<string,Buffer>,rename:Rename=renameSync):void {
-  const destination=join(root,"presentation");
-  mkdirSync(root,{recursive:true});
-  const temporaryRoot=join(root,`.discovery-render-${randomUUID()}`);
-  const temporary=join(temporaryRoot,"presentation");
-  const backup=join(root,`.presentation-backup-${randomUUID().replaceAll("-","")}`);
-  let moved=false;
-  let installed=false;
+const JS =
+  "// Presentation behavior is intentionally limited to accessible native HTML controls.\n";
+export function renderFiles(workspace: Workspace, digest: string): Map<string, Buffer> {
+  const d = workspace.discovery;
+  const manifest = {
+    workspace_id: d.id,
+    renderer_version: VERSION,
+    generated_at: d.updated_at,
+    source_digest: digest,
+    pages: PAGES,
+    generated_files: [...PAGES, "artifact.css", "artifact.js", "manifest.json"],
+  };
+  const values: Record<string, string> = {
+    "index.html": renderIndex(workspace),
+    "evidence.html": renderEvidence(workspace),
+    "hypotheses.html": renderHypotheses(workspace),
+    "decisions.html": renderDecisions(workspace),
+    "experiment.html": renderExperiment(workspace),
+    "review.html": renderReview(workspace),
+    "artifact.css": CSS,
+    "artifact.js": JS,
+    "manifest.json": JSON.stringify(manifest, Object.keys(manifest).sort(), 2) + "\n",
+  };
+  return new Map(Object.entries(values).map(([name, value]) => [name, Buffer.from(value)]));
+}
+export function checkCurrent(root: string, workspace: Workspace, digest: string): void {
+  const presentation = join(root, "presentation");
+  if (!existsSync(presentation))
+    throw new WorkspaceError("Presentation is missing or stale; run the renderer");
+  const expected = renderFiles(workspace, digest);
+  const actual = new Set(
+    filesRecursively(presentation).map((path) => posix(relative(presentation, path))),
+  );
+  const missing = [...expected.keys()].filter((name) => !actual.has(name)).sort();
+  const unexpected = [...actual].filter((name) => !expected.has(name)).sort();
+  const changed = [...expected]
+    .filter(
+      ([name, content]) =>
+        existsSync(join(presentation, name)) &&
+        !readFileSync(join(presentation, name)).equals(content),
+    )
+    .map(([name]) => name)
+    .sort();
+  const problems = [];
+  if (missing.length) problems.push(`missing files: ${missing.join(", ")}`);
+  if (unexpected.length) problems.push(`unexpected files: ${unexpected.join(", ")}`);
+  if (changed.length) problems.push(`changed files: ${changed.join(", ")}`);
+  if (problems.length) throw new WorkspaceError(`Presentation is stale; ${problems.join("; ")}`);
+}
+export function replacePresentation(
+  root: string,
+  files: Map<string, Buffer>,
+  rename: Rename = renameSync,
+): void {
+  const destination = join(root, "presentation");
+  mkdirSync(root, { recursive: true });
+  const temporaryRoot = join(root, `.discovery-render-${randomUUID()}`);
+  const temporary = join(temporaryRoot, "presentation");
+  const backup = join(root, `.presentation-backup-${randomUUID().replaceAll("-", "")}`);
+  let moved = false;
+  let installed = false;
   try {
-    mkdirSync(temporary,{recursive:true});
-    for(const [name,content] of files) writeFileSync(join(temporary,name),content);
-    if(existsSync(destination)){rename(destination,backup);moved=true;}
-    rename(temporary,destination);
-    installed=true;
-  } catch(error) {
-    if(moved){
-      if(existsSync(destination)) rmSync(destination,{recursive:true,force:true});
-      if(existsSync(backup)) rename(backup,destination);
+    mkdirSync(temporary, { recursive: true });
+    for (const [name, content] of files) writeFileSync(join(temporary, name), content);
+    if (existsSync(destination)) {
+      rename(destination, backup);
+      moved = true;
+    }
+    rename(temporary, destination);
+    installed = true;
+  } catch (error) {
+    if (moved) {
+      if (existsSync(destination)) rmSync(destination, { recursive: true, force: true });
+      if (existsSync(backup)) rename(backup, destination);
     }
     throw error;
   } finally {
-    rmSync(temporaryRoot,{recursive:true,force:true});
-    if(installed && existsSync(backup)) rmSync(backup,{recursive:true,force:true});
+    rmSync(temporaryRoot, { recursive: true, force: true });
+    if (installed && existsSync(backup)) rmSync(backup, { recursive: true, force: true });
   }
 }
-export function main(argv=process.argv.slice(2)):number { const args=[...argv]; const checkIndex=args.indexOf("--check"); const check=checkIndex>=0; if(check)args.splice(checkIndex,1); if(args.length!==1){console.error("usage: render_discovery.ts workspace [--check]");return 2;} const root=resolve(args[0]!); try { const workspace=loadWorkspace(root),digest=sourceDigest(root); if(check)checkCurrent(root,workspace,digest); else replacePresentation(root,renderFiles(workspace,digest)); console.log(`${check?"Presentation is current":"Rendered presentation"}: ${join(root,"presentation")}`); return 0; } catch(error) { console.error(`error: ${(error as Error).message}`); return 1; } }
-if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url))process.exitCode=main();
+export function main(argv = process.argv.slice(2)): number {
+  const args = [...argv];
+  const checkIndex = args.indexOf("--check");
+  const check = checkIndex >= 0;
+  if (check) args.splice(checkIndex, 1);
+  if (args.length !== 1) {
+    console.error("usage: render_discovery.ts workspace [--check]");
+    return 2;
+  }
+  const root = resolve(args[0]!);
+  try {
+    const workspace = loadWorkspace(root),
+      digest = sourceDigest(root);
+    if (check) checkCurrent(root, workspace, digest);
+    else replacePresentation(root, renderFiles(workspace, digest));
+    console.log(
+      `${check ? "Presentation is current" : "Rendered presentation"}: ${join(root, "presentation")}`,
+    );
+    return 0;
+  } catch (error) {
+    console.error(`error: ${(error as Error).message}`);
+    return 1;
+  }
+}
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url))
+  process.exitCode = main();
