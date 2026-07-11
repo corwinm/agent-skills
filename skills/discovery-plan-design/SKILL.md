@@ -1,6 +1,6 @@
 ---
 name: discovery-plan-design
-description: Use when a consultant, platform team, or product team needs to plan interviews, observations, document review, or data collection after initial intake. Prioritize learning around risky assumptions and contested problem hypotheses.
+description: Use when a software team needs to plan interviews, observations, document review, or data collection after initial intake. Prioritize learning around risky assumptions and contested problem hypotheses.
 license: MIT
 metadata:
   author: corwinm

@@ -24,7 +24,7 @@ Compatible agents and marketplaces can discover each directory containing a `SKI
 
 ### Product discovery
 
-Skills for helping consultancies, platform teams, product teams, and internal service teams turn requested solutions into traceable, evidence-backed problem decisions.
+Skills for helping software teams turn requested solutions into traceable, evidence-backed problem decisions.
 
 | Skill | Purpose |
 | --- | --- |
