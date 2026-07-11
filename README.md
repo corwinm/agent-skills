@@ -1,8 +1,8 @@
-# Agent Skills for Product Discovery
+# Agent Skills
 
-Open Agent Skills that help consultancies, platform teams, and internal service teams turn requested solutions into traceable, evidence-backed problem decisions.
+A collection of reusable skills that extend AI agents with focused workflows, domain knowledge, and practical guidance.
 
-The skills support a mixed workflow: an agent can conduct initial asynchronous intake, then assist a human facilitator with research, synthesis, alignment, and experiment design. They do not replace product judgment or claim to discover the “real problem” automatically.
+The collection will grow across different areas over time. Each skill is independently installable and designed to work with agents that support the open [Agent Skills specification](https://agentskills.io/).
 
 ## Install
 
@@ -18,9 +18,13 @@ Install one skill:
 npx skills add corwinm/agent-skills --skill solution-request-triage
 ```
 
-The repository follows the open [Agent Skills specification](https://agentskills.io/), so compatible agents and marketplaces can discover each directory containing a `SKILL.md` file.
+Compatible agents and marketplaces can discover each directory containing a `SKILL.md` file.
 
-## Skills
+## Available skills
+
+### Product discovery
+
+Skills for helping consultancies, platform teams, product teams, and internal service teams turn requested solutions into traceable, evidence-backed problem decisions.
 
 | Skill | Purpose |
 | --- | --- |
@@ -33,9 +37,11 @@ The repository follows the open [Agent Skills specification](https://agentskills
 | `experiment-increment-design` | Design the cheapest useful experiment or smallest valuable increment. |
 | `evidence-backed-problem-brief` | Assemble a concise decision brief grounded in cited evidence. |
 
-## Shared discovery model
+These skills support a mixed workflow: an agent can conduct initial asynchronous intake, then assist a human facilitator with research, synthesis, alignment, and experiment design. They do not replace product judgment or claim to discover the “real problem” automatically.
 
-All skills use the same concepts:
+#### Shared discovery model
+
+The discovery skills distinguish among:
 
 - **Request:** what someone asked to have built, preserved verbatim.
 - **Evidence:** source-linked observations or statements.
@@ -46,7 +52,7 @@ All skills use the same concepts:
 
 See [`docs/discovery-artifact.md`](docs/discovery-artifact.md) for the portable artifact schema and [`templates/discovery-artifact.yaml`](templates/discovery-artifact.yaml) for a starting file.
 
-## Principles
+#### Discovery principles
 
 1. Preserve the original request before reframing it.
 2. Ask for recent concrete examples before accepting generalizations.
