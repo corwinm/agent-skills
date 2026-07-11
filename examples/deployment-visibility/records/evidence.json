@@ -1,0 +1,21 @@
+[
+  {
+    "id": "evidence-001",
+    "type": "reported-experience",
+    "statement": "Support asks engineering whether a customer fix is live before replying.",
+    "source_id": "source-support-01",
+    "limitations": [
+      "One participant",
+      "Frequency is not established"
+    ]
+  },
+  {
+    "id": "evidence-002",
+    "type": "observation",
+    "statement": "A developer checked both CI and runtime deployment state to answer one request.",
+    "source_id": "source-observation-01",
+    "limitations": [
+      "One observed request"
+    ]
+  }
+]

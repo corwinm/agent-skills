@@ -1,0 +1,22 @@
+{
+  "version": "0.1",
+  "id": "deployment-visibility",
+  "title": "Deployment visibility",
+  "stage": "problem-framing",
+  "updated_at": "2026-07-11T18:00:00Z",
+  "review": {
+    "mode": "github-pull-request",
+    "authority": "risk-based",
+    "repository": "corwinm/agent-skills",
+    "pull_request": null
+  },
+  "request": {
+    "id": "request-001",
+    "verbatim": "Build us a dashboard that shows the deployment status of every application.",
+    "requester": "Engineering leadership",
+    "proposed_solution": "Central deployment dashboard",
+    "stated_rationale": "People repeatedly ask application teams whether releases reached production."
+  },
+  "decision_needed": "Approve a reversible experiment for release-status questions",
+  "recommendation": "Test a plain-language status response before building a dashboard."
+}

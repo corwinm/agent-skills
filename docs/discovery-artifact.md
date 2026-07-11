@@ -75,3 +75,7 @@ request
 ```
 
 Stages may loop. A later finding can revise a hypothesis, but history and previous decisions remain visible.
+
+## Presentation and review
+
+For a GitHub-first folder structure, committed HTML presentation, hybrid comments, risk-based agent authority, and revision ledger, see [`discovery-workspace.md`](discovery-workspace.md).

@@ -1,0 +1,13 @@
+[
+  {
+    "id": "revision-001",
+    "created_at": "2026-07-11T18:00:00Z",
+    "triggered_by": [],
+    "changed_records": [
+      "problem-001",
+      "problem-002",
+      "decision-001"
+    ],
+    "summary": "Added initial problem hypotheses and experiment decision."
+  }
+]

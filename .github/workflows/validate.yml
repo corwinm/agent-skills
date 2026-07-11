@@ -20,6 +20,10 @@ jobs:
           python-version: "3.x"
       - name: Run repository validator
         run: python3 scripts/validate.py
+      - name: Test discovery renderer
+        run: python3 -m unittest discover -s tests -v
+      - name: Verify example presentation is current
+        run: python3 scripts/render_discovery.py examples/deployment-visibility --check
       - name: Verify skills.sh discovery
         run: npx --yes skills@latest add . --list
       - name: Check out Agent Skills reference validator

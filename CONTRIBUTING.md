@@ -15,6 +15,14 @@ Each skill lives at `skills/<skill-name>/SKILL.md` and follows the [Agent Skills
 
 ```bash
 python3 scripts/validate.py
+python3 -m unittest discover -s tests -v
+```
+
+If discovery workspace behavior changes, regenerate the example and verify it is current:
+
+```bash
+python3 scripts/render_discovery.py examples/deployment-visibility
+python3 scripts/render_discovery.py examples/deployment-visibility --check
 ```
 
 ## Behavioral changes

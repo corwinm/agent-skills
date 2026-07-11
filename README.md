@@ -36,6 +36,8 @@ Skills for helping software teams turn requested solutions into traceable, evide
 | `problem-framing-review` | Facilitate stakeholder review, dissent, and readiness decisions. |
 | `experiment-increment-design` | Design the cheapest useful experiment or smallest valuable increment. |
 | `evidence-backed-problem-brief` | Assemble a concise decision brief grounded in cited evidence. |
+| `discovery-artifact-presentation` | Organize canonical discovery records and render a committed HTML review workspace. |
+| `discovery-comment-resolution` | Consume structured review comments and update artifacts under a risk-based authority policy. |
 
 These skills support a mixed workflow: an agent can conduct initial asynchronous intake, then assist a human facilitator with research, synthesis, alignment, and experiment design. They do not replace product judgment or claim to discover the “real problem” automatically.
 
@@ -51,6 +53,19 @@ The discovery skills distinguish among:
 - **Decision:** an explicit choice with rationale, owner, and date.
 
 See [`docs/discovery-artifact.md`](docs/discovery-artifact.md) for the portable artifact schema and [`templates/discovery-artifact.yaml`](templates/discovery-artifact.yaml) for a starting file.
+
+#### Reviewable discovery workspaces
+
+Discovery artifacts can live at the root of their own repository or inside a larger repository. Canonical JSON records remain the source of truth, while a deterministic renderer commits a hybrid HTML presentation for GitHub review.
+
+```bash
+python3 scripts/render_discovery.py path/to/discovery
+python3 scripts/render_discovery.py path/to/discovery --check
+```
+
+Comments combine stable record and field IDs with selected-text context. The default risk-based policy applies meaning-preserving corrections automatically and proposes changes that materially affect evidence, problem framing, decisions, recommendations, or experiments.
+
+See [`docs/discovery-workspace.md`](docs/discovery-workspace.md) and the committed [`examples/deployment-visibility`](examples/deployment-visibility) workspace.
 
 #### Discovery principles
 
@@ -68,6 +83,13 @@ Validate all skills:
 
 ```bash
 python3 scripts/validate.py
+```
+
+Run renderer tests and verify the example presentation is current:
+
+```bash
+python3 -m unittest discover -s tests -v
+python3 scripts/render_discovery.py examples/deployment-visibility --check
 ```
 
 Contributions should include a concrete scenario showing how the change improves agent behavior. See [CONTRIBUTING.md](CONTRIBUTING.md).
