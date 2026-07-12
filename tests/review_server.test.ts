@@ -48,6 +48,7 @@ test("independently installed discovery workspace bundles a runnable server", as
   const workspace = join(temporary, "workspace");
   cpSync(join(ROOT, "skills", skillName), installedSkill, { recursive: true });
   cpSync(WORKSPACE, workspace, { recursive: true });
+  rmSync(join(workspace, "presentation"), { recursive: true, force: true });
   const module = (await import(
     pathToFileURL(join(installedSkill, "scripts/review_server.ts")).href
   )) as { createReviewServer: typeof createReviewServer };
@@ -63,7 +64,20 @@ test("independently installed discovery workspace bundles a runnable server", as
   }
 });
 
-test("HTTP API persists comments/replies and serves only presentation files", async () =>
+test("review UI is generated from current canonical JSON without presentation files", async () =>
+  running(async (base, workspace) => {
+    rmSync(join(workspace, "presentation"), { recursive: true, force: true });
+    const discoveryPath = join(workspace, "discovery.json");
+    const discovery = JSON.parse(readFileSync(discoveryPath, "utf8"));
+    discovery.recommendation = "Serve this directly from canonical JSON";
+    writeFileSync(discoveryPath, JSON.stringify(discovery, null, 2) + "\n");
+    const response = await request(base, "/");
+    assert.equal(response.status, 200);
+    assert.match(await response.text(), /Serve this directly from canonical JSON/);
+    assert.equal(existsSync(join(workspace, "presentation")), false);
+  }));
+
+test("HTTP API persists comments/replies and rejects non-UI file paths", async () =>
   running(async (base) => {
     assert.equal((await request(base, "/")).status, 200);
     assert.equal((await request(base, "/../discovery.json")).status, 404);
@@ -166,11 +180,9 @@ test("agent queue uses portable one-request/one-response CLI protocol", async ()
     assert.equal(applied.status, 200, await applied.text());
     const hypotheses = JSON.parse(readFileSync(join(workspace, "records/hypotheses.json"), "utf8"));
     assert.equal(hypotheses[0].difficulty, job.response.proposal.after);
-    assert.ok(
-      readFileSync(join(workspace, "presentation/hypotheses.html"), "utf8").includes(
-        job.response.proposal.after,
-      ),
-    );
+    const refreshed = await request(base, "/hypotheses.html");
+    assert.equal(refreshed.status, 200);
+    assert.ok((await refreshed.text()).includes(job.response.proposal.after));
     const discovery = JSON.parse(readFileSync(join(workspace, "discovery.json"), "utf8"));
     const revisions = JSON.parse(readFileSync(join(workspace, "history/revisions.json"), "utf8"));
     assert.equal(discovery.updated_at, revisions.at(-1).created_at);
@@ -232,7 +244,7 @@ test("malformed injected agent responses fail the job before persistence", async
   }, agent);
 });
 
-test("failed regeneration rolls back the canonical record and revision ledger", async () => {
+test("failed canonical validation rolls back the canonical record and revision ledger", async () => {
   const agent: AgentAdapter = {
     async handle(request) {
       const canonical = request.canonical as { value: unknown };

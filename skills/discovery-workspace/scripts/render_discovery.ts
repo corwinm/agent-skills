@@ -66,10 +66,11 @@ function records(value: unknown, label: string): RecordValue[] {
     return record;
   });
 }
-function stringList(record: RecordValue, field: string, label: string): void {
+function stringList(record: RecordValue, field: string, label: string): string[] {
   const value = record[field] ?? [];
   if (!Array.isArray(value) || !value.every((item) => typeof item === "string"))
     throw new WorkspaceError(`${label}.${field} must be an array of strings`);
+  return value;
 }
 function filesRecursively(root: string): string[] {
   if (!existsSync(root)) return [];
@@ -163,6 +164,27 @@ export function loadWorkspace(root: string): Workspace {
   ].sort();
   if (duplicateComments.length)
     throw new WorkspaceError(`Duplicate comment ids: ${duplicateComments.join(", ")}`);
+  const evidenceIds = new Set(evidence.map((record) => String(record.id)));
+  for (const hypothesis of hypotheses)
+    for (const field of ["supporting_evidence_ids", "contradicting_evidence_ids"])
+      for (const id of stringList(hypothesis, field, String(hypothesis.id)))
+        if (!evidenceIds.has(id))
+          throw new WorkspaceError(`${hypothesis.id}.${field} references unknown evidence ${id}`);
+  const hypothesisIds = new Set(hypotheses.map((record) => String(record.id)));
+  for (const experiment of experiments) {
+    const hypothesisId = experiment.problem_hypothesis_id;
+    if (hypothesisId && !hypothesisIds.has(String(hypothesisId)))
+      throw new WorkspaceError(
+        `${experiment.id}.problem_hypothesis_id references unknown hypothesis ${hypothesisId}`,
+      );
+  }
+  const canonicalIds = new Set(Object.keys(recordsById));
+  for (const revision of revisions) {
+    for (const id of stringList(revision, "changed_records", String(revision.id)))
+      if (!canonicalIds.has(id))
+        throw new WorkspaceError(`${revision.id}.changed_records references unknown record ${id}`);
+    stringList(revision, "triggered_by", String(revision.id));
+  }
   return {
     discovery,
     request,

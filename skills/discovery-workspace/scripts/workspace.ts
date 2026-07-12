@@ -2,7 +2,7 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { main as renderMain } from "./render_discovery.ts";
+import { loadWorkspace, main as renderMain, sourceDigest } from "./render_discovery.ts";
 import { main as reviewMain } from "./review_server.ts";
 
 function writeJson(path: string, value: unknown): void {
@@ -60,11 +60,11 @@ export function initialize(rootInput: string): void {
 
 function usage(): never {
   throw new Error(
-    "usage: workspace.ts <init|render|check|review> <workspace> [port]\n" +
+    "usage: workspace.ts <init|export|check|review> <workspace> [port]\n" +
       "  init    create a new canonical workspace\n" +
-      "  render  regenerate presentation output\n" +
-      "  check   verify committed presentation freshness\n" +
-      "  review  render and start the interactive review server",
+      "  export  generate an optional static presentation snapshot\n" +
+      "  check   validate canonical workspace data\n" +
+      "  review  start the dynamic interactive review server",
   );
 }
 
@@ -73,20 +73,17 @@ export function main(argv = process.argv.slice(2)): void {
   if (!command || !rootInput) usage();
   const root = resolve(rootInput);
   if (command === "init") return initialize(root);
-  if (command === "render") {
+  if (command === "export") {
     process.exitCode = renderMain([root]);
     return;
   }
   if (command === "check") {
-    process.exitCode = renderMain([root, "--check"]);
+    loadWorkspace(root);
+    sourceDigest(root);
+    console.log(`Canonical workspace is valid: ${root}`);
     return;
   }
   if (command === "review") {
-    const renderStatus = renderMain([root]);
-    if (renderStatus !== 0) {
-      process.exitCode = renderStatus;
-      return;
-    }
     reviewMain([root, ...(port ? [port] : [])]);
     return;
   }

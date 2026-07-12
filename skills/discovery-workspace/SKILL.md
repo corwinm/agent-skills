@@ -1,6 +1,6 @@
 ---
 name: discovery-workspace
-description: Use when a software team needs to create, present, review, revise, or verify a portable product-discovery workspace. Operate the complete structured-record, generated-presentation, browser-comment, agent-proposal, and revision lifecycle without making generated HTML canonical.
+description: Use when a software team needs to create, present, review, revise, or verify a portable product-discovery workspace. Operate the complete structured-record, dynamic-browser-review, optional-static-export, agent-proposal, and revision lifecycle without making presentation output canonical.
 license: MIT
 metadata:
   author: corwinm
@@ -25,8 +25,8 @@ Use this skill when an agent must do one or more of the following:
 - Collect field-level or page-level comments and threaded replies
 - Ask an agent adapter to analyze a comment
 - Review or apply a structured proposal under an authority policy
-- Regenerate presentation output and preserve revision history
-- Verify that canonical records, comments, history, and committed presentation agree
+- Serve the review UI dynamically from canonical records and preserve revision history
+- Export an optional static snapshot for sharing or archival
 
 This is the operational and collaboration environment for the narrower discovery-stage skills. It does not replace evidence extraction, problem synthesis, stakeholder judgment, or experiment design.
 
@@ -37,11 +37,11 @@ This is the operational and collaboration environment for the narrower discovery
 3. **Validate provenance.** Ensure evidence links to sources, interpretations are not presented as evidence, hypotheses retain contradiction and uncertainty, and unknown fields remain unknown.
 4. **Assign stable identities.** Give every request, record, comment, and revision a stable ID. Target review comments with record ID plus optional field; selected text is context, not identity.
 5. **Configure authority.** Read `discovery.review.authority`; default to `risk-based`. Apply meaning-preserving corrections automatically only when authorized. Present material changes for explicit approval.
-6. **Render deterministically.** Generate the executive overview and detailed evidence, hypothesis, decision, experiment, and review views. Escape all source text and never hand-edit generated files.
+6. **Serve canonical state.** Launch the dynamic review UI directly from validated canonical records. Escape all source text; do not require or mutate a static presentation snapshot during review.
 7. **Launch review.** Start the bundled review command as a tracked background process. Wait for its listening message, request the reported URL, and give the verified URL to the user. Keep the process running until review is finished or the user asks to stop it.
 8. **Process feedback.** Resolve each target against canonical records, retrieve relevant evidence and contradictions, classify the request, and produce the smallest supported response or structured proposal.
-9. **Apply transactionally.** Reject stale or mismatched proposals. When approved, update canonical records, append revision history, regenerate presentation output, reply in the thread, and export the resolved thread. Never silently remove evidence, dissent, decisions, or comments.
-10. **Verify consistency.** Run the freshness check and account for every open comment. Complete only when records, history, exported resolutions, browser state, and presentation describe the same revision.
+9. **Apply transactionally.** Reject stale or mismatched proposals. When approved, update canonical records, validate the resulting workspace, append revision history, reply in the thread, and export the resolved thread. Never silently remove evidence, dissent, decisions, or comments.
+10. **Verify or export.** Run the canonical validation check and account for every open comment. Export a deterministic static presentation only when the user needs GitHub Pages, offline sharing, or an archival snapshot.
 
 ## One command interface
 
@@ -49,13 +49,13 @@ Run from this installed skill directory, or use an absolute path to `scripts/wor
 
 ```bash
 node scripts/workspace.ts init /absolute/path/to/workspace
-node scripts/workspace.ts render /absolute/path/to/workspace
+node scripts/workspace.ts export /absolute/path/to/workspace
 node scripts/workspace.ts check /absolute/path/to/workspace
 node scripts/workspace.ts review /absolute/path/to/workspace
 node scripts/workspace.ts review /absolute/path/to/workspace 8080
 ```
 
-`review` validates and regenerates the presentation before starting the server. The default address is <http://127.0.0.1:4173>. Active threads and jobs are stored in `<workspace>/.review/review.sqlite`; resolved threads are exported into `comments/`.
+`review` validates canonical records and serves the UI directly from their current JSON state. It does not require a `presentation/` directory. The default address is <http://127.0.0.1:4173>. Active threads and jobs are stored in `<workspace>/.review/review.sqlite`; resolved threads are exported into `comments/`. `export` optionally creates a deterministic static snapshot under `presentation/`.
 
 When background-process tools are available, run `review` yourself rather than only giving commands to the user. A successful launch is complete only after the HTTP endpoint responds and you report the URL and how the tracked process will be stopped.
 
@@ -102,8 +102,8 @@ Detailed views must expose stable `data-record-id` and `data-field` anchors. Pre
 - Do not modify direct quotes except to correct transcription against the source.
 - Do not use DOM position or selected text as the only comment identity.
 - Do not apply a proposal to a different or stale record field.
-- Do not resolve a thread before the artifact and response agree.
-- Do not replace valid presentation output when validation or regeneration fails.
+- Do not resolve a thread before canonical state, browser state, and the response agree.
+- Do not treat an optional exported snapshot as canonical or require it for interactive review.
 
 ## Completion checklist
 
@@ -119,5 +119,5 @@ Detailed views must expose stable `data-record-id` and `data-field` anchors. Pre
 - [ ] Material changes remain proposals until approved
 - [ ] Revision history links changes to triggering comments
 - [ ] Resolved browser threads are exported
-- [ ] `check` reports the committed presentation current
-- [ ] Canonical and presentation changes are committed together
+- [ ] `check` reports canonical records and links valid
+- [ ] Any requested static export is generated from the intended canonical revision

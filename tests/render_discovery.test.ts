@@ -252,7 +252,7 @@ test("invalid authority and unknown comment field are rejected", () =>
     writeJson(path, comment);
     assert.match(run(root).stderr, /not-a-field/);
   }));
-test("workspace CLI initializes, renders, and checks a new workspace", () =>
+test("workspace CLI initializes, exports, and validates a new workspace", () =>
   temporary((root) => {
     const target = join(root, "customer-onboarding");
     const initialized = spawnSync(process.execPath, [BUNDLED_WORKSPACE_CLI, "init", target], {
@@ -262,14 +262,7 @@ test("workspace CLI initializes, renders, and checks a new workspace", () =>
     assert.equal(initialized.status, 0, initialized.stderr);
     assert.ok(readFileSync(join(target, "discovery.json"), "utf8").includes("customer-onboarding"));
     assert.equal(
-      spawnSync(process.execPath, [BUNDLED_WORKSPACE_CLI, "render", target], {
-        cwd: ROOT,
-        encoding: "utf8",
-      }).status,
-      0,
-    );
-    assert.equal(
-      spawnSync(process.execPath, [BUNDLED_WORKSPACE_CLI, "check", target], {
+      spawnSync(process.execPath, [BUNDLED_WORKSPACE_CLI, "export", target], {
         cwd: ROOT,
         encoding: "utf8",
       }).status,
@@ -278,6 +271,37 @@ test("workspace CLI initializes, renders, and checks a new workspace", () =>
     assert.ok(
       readFileSync(join(target, "presentation/index.html"), "utf8").includes("Customer onboarding"),
     );
+    const discovery = JSON.parse(readFileSync(join(target, "discovery.json"), "utf8"));
+    discovery.recommendation = "Changed after the optional export";
+    writeJson(join(target, "discovery.json"), discovery);
+    assert.equal(
+      spawnSync(process.execPath, [BUNDLED_WORKSPACE_CLI, "check", target], {
+        cwd: ROOT,
+        encoding: "utf8",
+      }).status,
+      0,
+      "check validates canonical data without requiring a fresh static export",
+    );
+    const hypothesesPath = join(target, "records/hypotheses.json");
+    writeJson(hypothesesPath, [
+      {
+        id: "problem-001",
+        supporting_evidence_ids: ["missing-evidence"],
+        contradicting_evidence_ids: [],
+        unknowns: [],
+      },
+    ]);
+    const dangling = spawnSync(process.execPath, [BUNDLED_WORKSPACE_CLI, "check", target], {
+      cwd: ROOT,
+      encoding: "utf8",
+    });
+    assert.notEqual(dangling.status, 0);
+    assert.match(dangling.stderr, /missing-evidence/);
+    const removedRender = spawnSync(process.execPath, [BUNDLED_WORKSPACE_CLI, "render", target], {
+      cwd: ROOT,
+      encoding: "utf8",
+    });
+    assert.notEqual(removedRender.status, 0);
   }));
 
 test("bundled renderer remains a self-contained TypeScript entrypoint", () =>

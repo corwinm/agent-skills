@@ -9,9 +9,9 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test tests/*.test.ts",
     "validate": "node scripts/validate.ts",
-    "render:example": "node scripts/render_discovery.ts examples/deployment-visibility",
+    "export:example": "node skills/discovery-workspace/scripts/workspace.ts export examples/deployment-visibility",
     "review:example": "node scripts/review_server.ts examples/deployment-visibility",
-    "check:example": "node scripts/render_discovery.ts examples/deployment-visibility --check",
+    "check:example": "node skills/discovery-workspace/scripts/workspace.ts check examples/deployment-visibility",
     "check": "npm run format:check && npm run typecheck && npm test && npm run validate && npm run check:example"
   },
   "devDependencies": {

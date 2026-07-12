@@ -18,10 +18,10 @@ npm run format
 npm run check
 ```
 
-If discovery workspace behavior changes, regenerate the example and verify it is current:
+If static discovery export behavior changes, export the example and validate its canonical workspace:
 
 ```bash
-npm run render:example
+npm run export:example
 npm run check:example
 ```
 

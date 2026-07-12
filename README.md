@@ -55,14 +55,14 @@ See [`docs/discovery-artifact.md`](docs/discovery-artifact.md) for the portable 
 
 #### Reviewable discovery workspaces
 
-Discovery artifacts can live at the root of their own repository or inside a larger repository. Canonical JSON records remain the source of truth, while a deterministic renderer produces a hybrid HTML presentation with an interactive browser review service.
+Discovery artifacts can live at the root of their own repository or inside a larger repository. Canonical JSON records remain the source of truth. The review server builds the interactive UI directly from current JSON, while an optional deterministic export produces a static HTML snapshot for sharing or archival.
 
 ```bash
-npm run render:example
+npm run export:example
 npm run review:example
 ```
 
-Open <http://127.0.0.1:4173>, then use the pencil beside any reviewable statement or the page-level comment button. Browser threads persist in SQLite, can be sent to a portable CLI agent, and are exported into the workspace when resolved. When `discovery-workspace` is installed independently, its `scripts/workspace.ts` command can initialize, render, check, or launch the complete review application without cloning this repository or installing npm dependencies.
+Open <http://127.0.0.1:4173>, then use the pencil beside any reviewable statement or the page-level comment button. Browser threads persist in SQLite, can be sent to a portable CLI agent, and are exported into the workspace when resolved. When `discovery-workspace` is installed independently, its `scripts/workspace.ts` command can initialize, export, check, or launch the complete review application without cloning this repository or installing npm dependencies.
 
 See [`docs/discovery-workspace.md`](docs/discovery-workspace.md) and the committed [`examples/deployment-visibility`](examples/deployment-visibility) workspace.
 

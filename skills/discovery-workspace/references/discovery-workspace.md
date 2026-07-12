@@ -42,7 +42,7 @@ Requires Node.js 24 or newer. An independently installed `discovery-workspace` s
 
 ```bash
 node scripts/workspace.ts init /absolute/path/to/new-workspace
-node scripts/workspace.ts render /absolute/path/to/workspace
+node scripts/workspace.ts export /absolute/path/to/workspace
 node scripts/workspace.ts check /absolute/path/to/workspace
 node scripts/workspace.ts review /absolute/path/to/workspace
 ```
@@ -53,7 +53,7 @@ For this repository's example, the equivalent convenience commands are:
 
 ```bash
 npm install
-npm run render:example
+npm run export:example
 npm run review:example
 ```
 
@@ -185,15 +185,15 @@ A comment resolution links to changed records and explains what changed or why n
 6. A reviewer sends a thread to the configured agent adapter.
 7. The agent replies with an explanation and an optional structured proposal.
 8. Apply meaning-preserving changes under policy or require explicit approval for material changes.
-9. Update canonical records, append the revision ledger, and regenerate the presentation.
-10. Resolve and export the thread only after the browser artifact reflects the response.
-11. Commit canonical records, exported resolutions, revision history, and generated presentation together when Git history is desired.
+9. Update canonical records and append the revision ledger; the running review UI reads the new canonical state on its next request.
+10. Resolve and export the thread only after the dynamic browser UI reflects the response.
+11. Commit canonical records, exported resolutions, and revision history. Commit an optional static presentation snapshot only at meaningful sharing or archival milestones.
 
-The self-contained reference renderer reads JSON and uses only Node.js built-ins. Node.js 24 or newer runs its erasable TypeScript syntax directly without a loader or transpilation step:
+The low-level static exporter reads JSON and uses only Node.js built-ins. Node.js 24 or newer runs its erasable TypeScript syntax directly without a loader or transpilation step. These commands generate a snapshot or compare an existing snapshot byte-for-byte; they are distinct from `workspace.ts check`:
 
 ```bash
 node scripts/render_discovery.ts path/to/workspace
 node scripts/render_discovery.ts path/to/workspace --check
 ```
 
-`--check` rerenders in memory and compares the exact expected filename set and file bytes. It fails when presentation files are missing, unexpected, hand-edited, or stale relative to canonical sources or renderer behavior. Rendering validates before replacement and restores the previous presentation if the directory swap fails.
+`workspace.ts check` validates canonical workspace data, stable IDs, cross-record links, comment targets, and revision history without requiring a presentation export. `workspace.ts export` generates a deterministic static snapshot under `presentation/`; export validation occurs before replacement, and a failed directory swap restores the previous snapshot. The low-level renderer's `--check` option only verifies static snapshot freshness.

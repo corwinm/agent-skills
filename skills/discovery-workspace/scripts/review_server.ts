@@ -1,17 +1,12 @@
 #!/usr/bin/env node
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { basename, extname, join, resolve, sep } from "node:path";
+import { basename, extname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { isDeepStrictEqual } from "node:util";
 import { CliAgentAdapter, validateAgentResponse } from "./review/cli-agent.ts";
 import { SqliteReviewStorage } from "./review/store.ts";
-import {
-  loadWorkspace,
-  renderFiles,
-  replacePresentation,
-  sourceDigest,
-} from "./render_discovery.ts";
+import { loadWorkspace, renderFiles, sourceDigest } from "./render_discovery.ts";
 import type { AgentAdapter, AgentProposal, AgentRequest, CommentInput } from "./review/types.ts";
 
 const json = (res: ServerResponse, status: number, value: unknown): void => {
@@ -108,9 +103,8 @@ function applyProposal(
   });
   writeFileSync(ledgerPath, JSON.stringify(ledger, null, 2) + "\n");
 }
-function regenerate(root: string): void {
-  const workspace = loadWorkspace(root);
-  replacePresentation(root, renderFiles(workspace, sourceDigest(root)));
+function dynamicPresentation(root: string): Map<string, Buffer> {
+  return renderFiles(loadWorkspace(root), sourceDigest(root));
 }
 function archiveComment(root: string, commentId: string, item: unknown): void {
   mkdirSync(join(root, "comments"), { recursive: true });
@@ -124,11 +118,9 @@ export function createReviewServer(
   options: { database?: string; agent?: AgentAdapter } = {},
 ) {
   const root = resolve(rootInput);
-  if (
-    !existsSync(join(root, "discovery.json")) ||
-    !existsSync(join(root, "presentation/manifest.json"))
-  )
-    throw new Error("workspace must contain discovery.json and a rendered presentation");
+  if (!existsSync(join(root, "discovery.json")))
+    throw new Error("workspace must contain discovery.json");
+  loadWorkspace(root);
   const storage = new SqliteReviewStorage(options.database ?? join(root, ".review/review.sqlite"));
   const agent =
     options.agent ??
@@ -260,7 +252,7 @@ export function createReviewServer(
             const ledgerBefore = readFileSync(ledgerPath);
             try {
               applyProposal(root, response.proposal, thread.target, String(job.thread_id));
-              regenerate(root);
+              loadWorkspace(root);
             } catch (error) {
               writeFileSync(proposalTarget.file, canonicalBefore);
               writeFileSync(discoveryPath, discoveryBefore);
@@ -281,10 +273,8 @@ export function createReviewServer(
         return json(res, 405, { error: "method not allowed" });
       const name = url.pathname === "/" ? "index.html" : url.pathname.slice(1);
       if (!/^[a-zA-Z0-9._-]+$/.test(name)) return json(res, 404, { error: "not found" });
-      const presentation = resolve(root, "presentation");
-      const file = resolve(presentation, name);
-      if (!file.startsWith(presentation + sep) || !existsSync(file))
-        return json(res, 404, { error: "not found" });
+      const content = dynamicPresentation(root).get(name);
+      if (!content) return json(res, 404, { error: "not found" });
       const types: Record<string, string> = {
         ".html": "text/html; charset=utf-8",
         ".css": "text/css; charset=utf-8",
@@ -292,10 +282,10 @@ export function createReviewServer(
         ".json": "application/json; charset=utf-8",
       };
       res.writeHead(200, {
-        "content-type": types[extname(file)] ?? "application/octet-stream",
+        "content-type": types[extname(name)] ?? "application/octet-stream",
         "x-content-type-options": "nosniff",
       });
-      res.end(req.method === "HEAD" ? undefined : readFileSync(file));
+      res.end(req.method === "HEAD" ? undefined : content);
     } catch (error) {
       json(res, error instanceof SyntaxError ? 400 : 422, {
         error: String(error instanceof Error ? error.message : error),
