@@ -360,7 +360,9 @@ test("generated UI contains stable targets, accessible controls, drawer, statuse
     "--theme-bg: #f5f5f4",
     "--theme-surface: #ffffff",
     "--theme-text: #18181b",
-    "#review-drawer { width: min(560px, calc(100vw - 32px)); margin: auto",
+    "#review-drawer { position: fixed; left: 50%; top: 50%; width: min(560px, calc(100vw - 32px)); margin: 0; transform: translate(-50%, -50%)",
+    "#review-drawer::backdrop { background: #18181b80",
+    ".decision-banner { background: var(--surface); color: var(--ink); border: 1px solid var(--line)",
   ])
     assert.ok(css.includes(marker), marker);
   assert.ok(!css.includes("#176b55"), "legacy green accent should be removed");
