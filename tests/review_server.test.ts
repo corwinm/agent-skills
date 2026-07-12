@@ -348,11 +348,15 @@ test("generated UI contains stable targets, accessible controls, drawer, statuse
     'data-record-id="problem-001"',
     'data-field="difficulty"',
     'aria-label="Comment on this page"',
+    'class="icon icon-message-square-plus"',
+    "<span>Comment on page</span>",
     'id="review-drawer"',
     'aria-live="polite"',
   ])
     assert.ok(html.includes(marker), marker);
+  assert.ok(!html.includes("✎"), "pencil glyph should not represent comments");
   for (const marker of [
+    "icon-message-square-plus",
     "Request agent",
     "data-agent",
     "data-reply",
