@@ -13,11 +13,11 @@ metadata:
 
 Consume review comments as structured inputs to discovery revision. Apply safe corrections, propose material changes, and leave an auditable explanation for every comment.
 
-Read [`references/discovery-workspace.md`](references/discovery-workspace.md) before processing comments.
+Read [`references/discovery-workspace.md`](references/discovery-workspace.md) before processing comments. This installed skill includes the complete renderer and interactive review runtime under `scripts/`; Node.js 24 or newer is the only runtime prerequisite.
 
 ## Workflow
 
-1. **Collect open comments.** Read unresolved browser threads from the review store and archived files under `comments/`; ingest other channels only through an adapter. Preserve author, timestamp, selected text, and semantic target.
+1. **Start or locate review.** If the workspace's review server is not already running, launch this installed skill's `scripts/review_server.ts` as a tracked background process, wait for its listening message, verify its HTTP endpoint, and report the URL. Then read unresolved browser threads from the review store and archived files under `comments/`; ingest other channels only through an adapter. Preserve author, timestamp, selected text, and semantic target.
 2. **Resolve the target.** Locate the canonical record using `target.record_id` and `target.field`. Treat selected text as context, not identity. If the record or field no longer exists, mark the comment `needs-clarification` rather than guessing.
 3. **Retrieve provenance.** Read the targeted record, linked evidence, source excerpts, contradictory evidence, relevant decisions, and later revisions before interpreting the feedback.
 4. **Classify the request.** Choose correction, clarification, evidence challenge, interpretation challenge, problem-frame change, decision change, experiment change, or presentation-only change.
@@ -26,6 +26,20 @@ Read [`references/discovery-workspace.md`](references/discovery-workspace.md) be
 7. **Record resolution.** Set the action, explanation, changed record IDs, resolver, and timestamp. Append a revision entry triggered by the comment.
 8. **Regenerate presentation.** Run the artifact renderer and freshness check. Source records, comment resolution, revision ledger, and HTML must agree.
 9. **Reply in the review thread.** Explain what changed, what was proposed, or which evidence is still needed. Resolve and export the thread only after the artifact reflects the response.
+
+## Bundled review server
+
+Run from this installed skill directory, or use absolute script paths:
+
+```bash
+node scripts/render_discovery.ts /absolute/path/to/workspace
+node scripts/review_server.ts /absolute/path/to/workspace
+node scripts/review_server.ts /absolute/path/to/workspace 8080
+```
+
+The server defaults to <http://127.0.0.1:4173> and stores active state at `<workspace>/.review/review.sqlite`. The bundled deterministic mock agent makes the workflow executable after a standalone skill installation; it is a protocol demonstration, not a configured production agent. Do not require a repository clone or repository-level npm installation.
+
+When background-process tools are available, run and verify the server yourself instead of only giving commands to the user. Keep it running until review is finished or the user asks to stop it.
 
 ## Risk-based policy
 
@@ -74,6 +88,7 @@ Allowed actions are `revised`, `accepted-no-change`, `needs-clarification`, `nee
 ## Completion checklist
 
 - [ ] Every open comment was accounted for
+- [ ] Review server URL responds and its process is tracked
 - [ ] Stable record and field target was resolved
 - [ ] Relevant sources and contradictions were read
 - [ ] Authority policy was applied explicitly

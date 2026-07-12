@@ -38,7 +38,16 @@ boundary, while agent integrations satisfy `AgentAdapter`.
 
 ## Interactive local review
 
-Requires Node.js 24 or newer. From this repository, run exactly:
+Requires Node.js 24 or newer. This independently installed skill includes the renderer and complete review runtime. From the installed skill directory, run:
+
+```bash
+node scripts/render_discovery.ts /absolute/path/to/workspace
+node scripts/review_server.ts /absolute/path/to/workspace
+```
+
+An agent with background-process support should launch the server itself, wait for the listening message, verify the URL, and report it while keeping the process tracked. No repository clone or npm installation is required.
+
+For this repository's example, the equivalent convenience commands are:
 
 ```bash
 npm install

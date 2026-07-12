@@ -13,7 +13,7 @@ metadata:
 
 Create or update a portable discovery workspace whose structured records remain canonical and whose committed HTML helps humans understand and review the work.
 
-Read [`references/discovery-workspace.md`](references/discovery-workspace.md) before creating the workspace. Use the self-contained `scripts/render_discovery.ts` for deterministic JSON-based rendering directly with Node.js 24 or newer.
+Read [`references/discovery-workspace.md`](references/discovery-workspace.md) before creating the workspace. This installed skill bundles both the deterministic renderer and the interactive review server under `scripts/`; Node.js 24 or newer is the only runtime prerequisite. Do not require the user to clone this repository or install repository-level npm dependencies.
 
 ## Workflow
 
@@ -24,7 +24,7 @@ Read [`references/discovery-workspace.md`](references/discovery-workspace.md) be
 5. **Configure review.** Use interactive browser review by default, record GitHub context when available, and set `review.authority`; default to `risk-based`.
 6. **Render the hybrid presentation.** Generate the executive overview plus evidence, hypotheses, decisions, experiment, and review views with stable browser comment targets. Do not hand-edit generated files.
 7. **Check freshness.** Run the renderer with `--check`. Complete only when the manifest digest matches the canonical workspace.
-8. **Run interactive review.** Serve the workspace through the review application. Verify page and field pencils open persisted threads and that an agent proposal can be reviewed without silently changing canonical records.
+8. **Run interactive review.** Locate this installed skill directory and launch its bundled `scripts/review_server.ts` as a tracked background process. Wait for the listening message, request the reported URL to verify it responds, and give the URL to the user. Keep the process running for review until the user asks to stop it. Verify page and field pencils open persisted threads and that an agent proposal can be reviewed without silently changing canonical records.
 
 ## Presentation hierarchy
 
@@ -40,14 +40,20 @@ The overview should prioritize:
 
 Detailed views must expose stable `data-record-id` and `data-field` anchors. Escape all source text before rendering HTML.
 
-## Rendering commands
+## Bundled commands
 
 From an installed skill directory, invoke the bundled renderer:
 
 ```bash
 node scripts/render_discovery.ts path/to/workspace
 node scripts/render_discovery.ts path/to/workspace --check
+node scripts/review_server.ts path/to/workspace
+node scripts/review_server.ts path/to/workspace 8080
 ```
+
+Run these from the installed `discovery-artifact-presentation` skill directory, or use absolute paths to its scripts. The server defaults to <http://127.0.0.1:4173>, stores active state at `<workspace>/.review/review.sqlite`, and includes a deterministic mock adapter so the complete review flow works immediately. The mock demonstrates the portable protocol; describe it as a mock rather than implying that a production agent is configured.
+
+When an agent has a background-process tool, it should start the server itself rather than asking the user to copy commands. A successful launch is complete only after the agent verifies the HTTP endpoint and reports both the URL and how the process will be stopped.
 
 If a project already has an equivalent renderer, preserve its stack and verify the same invariants rather than replacing it automatically.
 
@@ -70,4 +76,5 @@ If a project already has an equivalent renderer, preserve its stack and verify t
 - [ ] Open comments and authority policy are visible
 - [ ] Manifest records renderer version and source digest
 - [ ] `--check` reports the committed presentation current
+- [ ] Bundled review server is running and its HTTP endpoint was verified
 - [ ] Source and presentation changes are committed together

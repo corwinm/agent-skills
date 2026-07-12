@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
 import { createReviewServer } from "../scripts/review_server.ts";
@@ -38,6 +38,29 @@ const request = async (base: string, path: string, options?: RequestInit) =>
       ...(options?.headers ?? {}),
     },
   });
+
+test("independently installed review skills bundle a runnable server", async () => {
+  for (const skillName of ["discovery-artifact-presentation", "discovery-comment-resolution"]) {
+    const temporary = mkdtempSync(join(tmpdir(), "installed-skill-test-"));
+    const installedSkill = join(temporary, skillName);
+    const workspace = join(temporary, "workspace");
+    cpSync(join(ROOT, "skills", skillName), installedSkill, { recursive: true });
+    cpSync(WORKSPACE, workspace, { recursive: true });
+    const module = (await import(
+      pathToFileURL(join(installedSkill, "scripts/review_server.ts")).href
+    )) as { createReviewServer: typeof createReviewServer };
+    const server = module.createReviewServer(workspace);
+    await new Promise<void>((resolveListen) => server.listen(0, "127.0.0.1", resolveListen));
+    const address = server.address();
+    assert.ok(address && typeof address === "object");
+    try {
+      assert.equal((await request(`http://127.0.0.1:${address.port}`, "/")).status, 200);
+    } finally {
+      await new Promise<void>((done) => server.close(() => done()));
+      rmSync(temporary, { recursive: true, force: true });
+    }
+  }
+});
 
 test("HTTP API persists comments/replies and serves only presentation files", async () =>
   running(async (base) => {

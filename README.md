@@ -63,7 +63,7 @@ npm run render:example
 npm run review:example
 ```
 
-Open <http://127.0.0.1:4173>, then use the pencil beside any reviewable statement or the page-level comment button. Browser threads persist in SQLite, can be sent to a portable CLI agent, and are exported into the workspace when resolved. Run `node scripts/render_discovery.ts path/to/discovery --check` to verify committed output.
+Open <http://127.0.0.1:4173>, then use the pencil beside any reviewable statement or the page-level comment button. Browser threads persist in SQLite, can be sent to a portable CLI agent, and are exported into the workspace when resolved. When `discovery-artifact-presentation` is installed independently, its own `scripts/review_server.ts` and supporting modules are included; an agent can launch that bundled server directly without cloning this repository or installing npm dependencies. Run `node scripts/render_discovery.ts path/to/discovery --check` to verify committed output.
 
 See [`docs/discovery-workspace.md`](docs/discovery-workspace.md) and the committed [`examples/deployment-visibility`](examples/deployment-visibility) workspace.
 
