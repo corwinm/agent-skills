@@ -104,7 +104,9 @@ function applyProposal(
   writeFileSync(ledgerPath, JSON.stringify(ledger, null, 2) + "\n");
 }
 function dynamicPresentation(root: string): Map<string, Buffer> {
-  return renderFiles(loadWorkspace(root), sourceDigest(root));
+  return renderFiles(loadWorkspace(root), sourceDigest(root), {
+    includePrivateMeetingArtifacts: true,
+  });
 }
 function archiveComment(root: string, commentId: string, item: unknown): void {
   mkdirSync(join(root, "comments"), { recursive: true });

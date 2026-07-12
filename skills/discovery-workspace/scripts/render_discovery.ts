@@ -3,9 +3,11 @@
 import { createHash, randomUUID } from "node:crypto";
 import {
   existsSync,
+  lstatSync,
   mkdirSync,
   readFileSync,
   readdirSync,
+  realpathSync,
   renameSync,
   rmSync,
   statSync,
@@ -14,7 +16,7 @@ import {
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const VERSION = "0.1.0";
+export const VERSION = "0.2.0";
 const SOURCE_FILES = [
   "discovery.json",
   "records/evidence.json",
@@ -29,6 +31,7 @@ const PAGES = [
   "hypotheses.html",
   "decisions.html",
   "experiment.html",
+  "sources.html",
   "review.html",
 ];
 type RecordValue = Record<string, unknown>;
@@ -76,6 +79,8 @@ function filesRecursively(root: string): string[] {
   if (!existsSync(root)) return [];
   return readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
     const path = join(root, entry.name);
+    if (entry.isSymbolicLink())
+      throw new WorkspaceError(`Symbolic links are not allowed in discovery sources: ${path}`);
     return entry.isDirectory() ? [path, ...filesRecursively(path)] : [path];
   });
 }
@@ -109,6 +114,119 @@ export function loadWorkspace(root: string): Workspace {
     readJson(join(root, "history/revisions.json"), []),
     "history/revisions.json",
   );
+  const sourcesRoot = join(root, "sources");
+  if (existsSync(sourcesRoot) && lstatSync(sourcesRoot).isSymbolicLink())
+    throw new WorkspaceError("The sources directory must not be a symbolic link");
+  const meetings = existsSync(sourcesRoot)
+    ? readdirSync(sourcesRoot, { withFileTypes: true })
+        .filter(
+          (entry) =>
+            entry.isDirectory() && existsSync(join(sourcesRoot, entry.name, "meeting.json")),
+        )
+        .sort((left, right) => left.name.localeCompare(right.name))
+        .map((entry) => {
+          const bundle = join(sourcesRoot, entry.name);
+          const meeting = mapping(
+            readJson(join(bundle, "meeting.json")),
+            `sources/${entry.name}/meeting.json`,
+          );
+          for (const field of [
+            "id",
+            "kind",
+            "status",
+            "title",
+            "learning_questions",
+            "participants",
+            "consent",
+            "privacy",
+            "artifacts",
+            "ingestion",
+          ])
+            if (!(field in meeting))
+              throw new WorkspaceError(`${meeting.id ?? entry.name} requires ${field}`);
+          const artifacts = mapping(meeting.artifacts, `${meeting.id}.artifacts`);
+          const readArtifact = (field: string): string => {
+            const value = artifacts[field];
+            if (!value) return "";
+            const path = resolve(bundle, String(value));
+            if (!path.startsWith(bundle + sep))
+              throw new WorkspaceError(
+                `${meeting.id}.artifacts.${field} must stay inside its meeting bundle`,
+              );
+            if (!existsSync(path))
+              throw new WorkspaceError(`${meeting.id}.artifacts.${field} not found: ${value}`);
+            if (
+              lstatSync(path).isSymbolicLink() ||
+              !realpathSync(path).startsWith(realpathSync(bundle) + sep)
+            )
+              throw new WorkspaceError(
+                `${meeting.id}.artifacts.${field} must not use symbolic links`,
+              );
+            return readFileSync(path, "utf8");
+          };
+          const guide = readArtifact("guide");
+          const transcript = readArtifact("transcript");
+          const segmentIds = [...transcript.matchAll(/^##\s+(seg-[A-Za-z0-9_-]+)/gm)].map(
+            (match) => match[1]!,
+          );
+          const segmentSpeakers = Object.fromEntries(
+            [
+              ...transcript.matchAll(/^##\s+(seg-[A-Za-z0-9_-]+)\s*\|\s*[^|\n]+\|\s*(.+?)\s*$/gm),
+            ].map((match) => [match[1]!, match[2]!]),
+          );
+          if (new Set(segmentIds).size !== segmentIds.length)
+            throw new WorkspaceError(`${meeting.id} has duplicate transcript segment ids`);
+          const consent = mapping(meeting.consent, `${meeting.id}.consent`);
+          const consentStates = new Set([
+            "granted",
+            "granted-with-anonymization",
+            "not-granted",
+            "withdrawn",
+            "unknown",
+            "not-applicable",
+          ]);
+          for (const [field, value] of Object.entries(consent))
+            if (!consentStates.has(String(value)))
+              throw new WorkspaceError(`${meeting.id}.consent.${field} has unknown state ${value}`);
+          if (!Array.isArray(meeting.participants))
+            throw new WorkspaceError(`${meeting.id}.participants must be an array`);
+          const participants = meeting.participants.map((value, index) =>
+            mapping(value, `${meeting.id}.participants[${index}]`),
+          );
+          const participantPseudonyms = new Set<string>();
+          for (const participant of participants) {
+            if (typeof participant.pseudonym !== "string" || !participant.pseudonym.trim())
+              throw new WorkspaceError(`${meeting.id} participant requires a pseudonym`);
+            participantPseudonyms.add(participant.pseudonym);
+            if (String(participant.role).toLowerCase() === "facilitator") continue;
+            const participantConsent = mapping(
+              participant.consent,
+              `${meeting.id}.${participant.pseudonym}.consent`,
+            );
+            for (const field of ["discovery_use", "direct_quote_use", "external_sharing"])
+              if (!consentStates.has(String(participantConsent[field])))
+                throw new WorkspaceError(
+                  `${meeting.id}.${participant.pseudonym}.consent.${field} has unknown state`,
+                );
+          }
+          for (const speaker of Object.values(segmentSpeakers))
+            if (!participantPseudonyms.has(speaker))
+              throw new WorkspaceError(
+                `${meeting.id} transcript speaker ${speaker} is not a declared participant`,
+              );
+          return {
+            ...meeting,
+            bundle: `sources/${entry.name}`,
+            guide,
+            transcript,
+            transcriptPath: artifacts.transcript
+              ? posix(relative(root, resolve(bundle, String(artifacts.transcript))))
+              : null,
+            segmentIds,
+            segmentSpeakers,
+          } as RecordValue;
+        })
+    : [];
   for (const record of evidence) stringList(record, "limitations", String(record.id));
   for (const record of hypotheses)
     for (const field of ["supporting_evidence_ids", "contradicting_evidence_ids", "unknowns"])
@@ -139,12 +257,12 @@ export function loadWorkspace(root: string): Workspace {
           return comment;
         })
     : [];
-  const collections = [evidence, hypotheses, decisions, experiments, revisions];
+  const collections = [evidence, hypotheses, decisions, experiments, meetings, revisions];
   const ids = [String(request.id), ...collections.flat().map((record) => String(record.id))];
   const duplicates = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))].sort();
   if (duplicates.length) throw new WorkspaceError(`Duplicate record ids: ${duplicates.join(", ")}`);
   const recordsById = Object.fromEntries(
-    [request, evidence, hypotheses, decisions, experiments]
+    [request, evidence, hypotheses, decisions, experiments, meetings]
       .flat(2)
       .map((record: RecordValue) => [String(record.id), record]),
   );
@@ -165,6 +283,57 @@ export function loadWorkspace(root: string): Workspace {
   if (duplicateComments.length)
     throw new WorkspaceError(`Duplicate comment ids: ${duplicateComments.join(", ")}`);
   const evidenceIds = new Set(evidence.map((record) => String(record.id)));
+  const meetingsById = Object.fromEntries(meetings.map((meeting) => [String(meeting.id), meeting]));
+  for (const item of evidence) {
+    const meeting = meetingsById[String(item.source_id ?? "")];
+    if (!meeting) continue;
+    const consent = meeting.consent as RecordValue;
+    if (!["granted", "granted-with-anonymization"].includes(String(consent.transcription)))
+      throw new WorkspaceError(`${item.id} cannot use a transcript without transcription consent`);
+    const locator = mapping(item.source_locator, `${item.id}.source_locator`);
+    const participant = (meeting.participants as RecordValue[]).find(
+      (value) => value.pseudonym === locator.speaker,
+    );
+    if (!participant)
+      throw new WorkspaceError(`${item.id}.source_locator.speaker is not a meeting participant`);
+    const participantConsent = mapping(
+      participant.consent,
+      `${meeting.id}.${participant.pseudonym}.consent`,
+    );
+    if (
+      !["granted", "granted-with-anonymization"].includes(String(participantConsent.discovery_use))
+    )
+      throw new WorkspaceError(`${item.id} cannot be used without participant discovery consent`);
+    if (
+      item.type === "direct-quote" &&
+      !["granted", "granted-with-anonymization"].includes(
+        String(participantConsent.direct_quote_use),
+      )
+    )
+      throw new WorkspaceError(
+        `${item.id} is a direct quote but ${participant.pseudonym} direct_quote_use is ${participantConsent.direct_quote_use}`,
+      );
+    const locatorPath = posix(String(locator.path ?? ""));
+    if (locatorPath !== meeting.transcriptPath)
+      throw new WorkspaceError(
+        `${item.id}.source_locator.path ${locatorPath} does not match ${meeting.transcriptPath}`,
+      );
+    const segmentId = String(locator.segment_id ?? "");
+    if (!(meeting.segmentIds as string[]).includes(segmentId))
+      throw new WorkspaceError(`${item.id}.source_locator references unknown segment ${segmentId}`);
+    if ((meeting.segmentSpeakers as Record<string, string>)[segmentId] !== locator.speaker)
+      throw new WorkspaceError(
+        `${item.id}.source_locator.speaker does not match transcript segment ${segmentId}`,
+      );
+  }
+  for (const meeting of meetings) {
+    const ingestion = mapping(meeting.ingestion, `${meeting.id}.ingestion`);
+    for (const id of stringList(ingestion, "evidence_ids", String(meeting.id))) {
+      const item = evidence.find((record) => record.id === id);
+      if (!item || item.source_id !== meeting.id)
+        throw new WorkspaceError(`${meeting.id}.ingestion.evidence_ids has invalid evidence ${id}`);
+    }
+  }
   for (const hypothesis of hypotheses)
     for (const field of ["supporting_evidence_ids", "contradicting_evidence_ids"])
       for (const id of stringList(hypothesis, field, String(hypothesis.id)))
@@ -192,6 +361,7 @@ export function loadWorkspace(root: string): Workspace {
     hypotheses,
     decisions,
     experiments,
+    meetings,
     comments,
     revisions,
     recordsById,
@@ -256,6 +426,7 @@ function nav(active: string): string {
     ["Hypotheses", "hypotheses.html"],
     ["Decisions", "decisions.html"],
     ["Experiment", "experiment.html"],
+    ["Meetings", "sources.html"],
     ["Review", "review.html"],
   ]
     .map(
@@ -462,6 +633,50 @@ function renderExperiment(w: Workspace): string {
       (cards || '<p class="empty">No experiment recorded.</p>'),
   );
 }
+function renderSources(w: Workspace, includePrivate: boolean): string {
+  const cards = w.meetings
+    .map((meeting: RecordValue) => {
+      const questions = Array.isArray(meeting.learning_questions)
+        ? meeting.learning_questions
+            .map((value) => {
+              const question = value as RecordValue;
+              return `<li><code>${e(question.id)}</code> ${e(question.question)}</li>`;
+            })
+            .join("")
+        : "";
+      const ingestion = (meeting.ingestion ?? {}) as RecordValue;
+      const consent = (meeting.consent ?? {}) as RecordValue;
+      const participantsPermitDiscovery = (meeting.participants as RecordValue[])
+        .filter((participant) => String(participant.role).toLowerCase() !== "facilitator")
+        .every((participant) =>
+          ["granted", "granted-with-anonymization"].includes(
+            String((participant.consent as RecordValue).discovery_use),
+          ),
+        );
+      const mayShowTranscript =
+        includePrivate &&
+        meeting.status !== "withdrawn" &&
+        (meeting.privacy as RecordValue)?.transcript_redacted === true &&
+        ["granted", "granted-with-anonymization"].includes(String(consent.transcription)) &&
+        participantsPermitDiscovery;
+      return `<article class="record meeting" id="${e(meeting.id)}" ${attrs(meeting.id)}>
+        <div class="record-heading"><span class="record-id">${e(meeting.id)}</span><span class="tag">${e(meeting.status)}</span></div>
+        <h2>${e(meeting.title)}</h2>
+        <p>${e(meeting.kind)} · ingestion ${e(ingestion.status ?? "not-ingested")}</p>
+        <h3>Learning questions</h3><ul>${questions || "<li>None recorded.</li>"}</ul>
+        <details open><summary>Facilitator guide</summary>${includePrivate && meeting.status !== "withdrawn" ? `<pre class="source-text">${e(meeting.guide)}</pre>` : '<p class="empty">Guide withheld from static export.</p>'}</details>
+        <details><summary>Redacted transcript</summary>${mayShowTranscript ? `<pre class="source-text">${e(meeting.transcript)}</pre>` : '<p class="empty">Transcript withheld by consent or privacy policy.</p>'}</details>
+      </article>`;
+    })
+    .join("");
+  return page(
+    "Meetings",
+    "sources.html",
+    w,
+    '<header class="page-intro"><span class="eyebrow">Prepare and learn</span><h2>Discovery meetings</h2><p>Facilitator guides, consent-aware transcript bundles, and ingestion status connect meetings to evidence.</p></header>' +
+      (cards || '<p class="empty">No meeting bundles recorded.</p>'),
+  );
+}
 function renderReview(w: Workspace): string {
   const review = w.discovery.review ?? {};
   const url =
@@ -578,8 +793,72 @@ const JS = String.raw`(() => {
   form.addEventListener('submit', async (event) => { event.preventDefault(); try { const body = new FormData(form).get('body'); await api('/api/comments', {method:'POST', body:JSON.stringify({target, body, author:'browser reviewer'})}); form.reset(); await refresh(); } catch (error) { showError(error); } });
 })();
 `;
-export function renderFiles(workspace: Workspace, digest: string): Map<string, Buffer> {
-  const d = workspace.discovery;
+function isEvidenceShareable(record: RecordValue, workspace: Workspace): boolean {
+  const meeting = workspace.meetings.find((value: RecordValue) => value.id === record.source_id);
+  if (!meeting) return true;
+  if (meeting.status === "withdrawn") return false;
+  const locator = record.source_locator as RecordValue;
+  const participant = (meeting.participants as RecordValue[]).find(
+    (value) => value.pseudonym === locator.speaker,
+  );
+  if (!participant) return false;
+  const consent = participant.consent as RecordValue;
+  return ["granted", "granted-with-anonymization"].includes(String(consent.external_sharing));
+}
+function staticPresentationWorkspace(workspace: Workspace): Workspace {
+  const evidence = workspace.evidence.filter((record: RecordValue) =>
+    isEvidenceShareable(record, workspace),
+  );
+  const visibleEvidenceIds = new Set(evidence.map((record: RecordValue) => String(record.id)));
+  const hiddenEvidence = evidence.length !== workspace.evidence.length;
+  const hypotheses = workspace.hypotheses.filter((record: RecordValue) =>
+    [
+      ...(record.supporting_evidence_ids as string[]),
+      ...(record.contradicting_evidence_ids as string[]),
+    ].every((id) => visibleEvidenceIds.has(id)),
+  );
+  const visibleHypothesisIds = new Set(hypotheses.map((record: RecordValue) => String(record.id)));
+  const experiments = workspace.experiments.filter((record: RecordValue) =>
+    visibleHypothesisIds.has(String(record.problem_hypothesis_id)),
+  );
+  const decisions = hiddenEvidence ? [] : workspace.decisions;
+  const revisions = hiddenEvidence ? [] : workspace.revisions;
+  const visibleRecordIds = new Set([
+    String(workspace.request.id),
+    ...evidence.map((record: RecordValue) => String(record.id)),
+    ...hypotheses.map((record: RecordValue) => String(record.id)),
+    ...decisions.map((record: RecordValue) => String(record.id)),
+    ...experiments.map((record: RecordValue) => String(record.id)),
+    ...workspace.meetings.map((record: RecordValue) => String(record.id)),
+  ]);
+  const comments = workspace.comments.filter((record: RecordValue) =>
+    visibleRecordIds.has(String((record.target as RecordValue).record_id)),
+  );
+  return {
+    ...workspace,
+    discovery: hiddenEvidence
+      ? {
+          ...workspace.discovery,
+          recommendation:
+            "Withheld from static export because supporting evidence is not shareable.",
+        }
+      : workspace.discovery,
+    evidence,
+    hypotheses,
+    decisions,
+    experiments,
+    comments,
+    revisions,
+  };
+}
+export function renderFiles(
+  workspace: Workspace,
+  digest: string,
+  options: { includePrivateMeetingArtifacts?: boolean } = {},
+): Map<string, Buffer> {
+  const includePrivate = options.includePrivateMeetingArtifacts === true;
+  const presentedWorkspace = includePrivate ? workspace : staticPresentationWorkspace(workspace);
+  const d = presentedWorkspace.discovery;
   const manifest = {
     workspace_id: d.id,
     renderer_version: VERSION,
@@ -589,12 +868,13 @@ export function renderFiles(workspace: Workspace, digest: string): Map<string, B
     generated_files: [...PAGES, "artifact.css", "artifact.js", "manifest.json"],
   };
   const values: Record<string, string> = {
-    "index.html": renderIndex(workspace),
-    "evidence.html": renderEvidence(workspace),
-    "hypotheses.html": renderHypotheses(workspace),
-    "decisions.html": renderDecisions(workspace),
-    "experiment.html": renderExperiment(workspace),
-    "review.html": renderReview(workspace),
+    "index.html": renderIndex(presentedWorkspace),
+    "evidence.html": renderEvidence(presentedWorkspace),
+    "hypotheses.html": renderHypotheses(presentedWorkspace),
+    "decisions.html": renderDecisions(presentedWorkspace),
+    "experiment.html": renderExperiment(presentedWorkspace),
+    "sources.html": renderSources(presentedWorkspace, includePrivate),
+    "review.html": renderReview(presentedWorkspace),
     "artifact.css": CSS,
     "artifact.js": JS,
     "manifest.json": JSON.stringify(manifest, Object.keys(manifest).sort(), 2) + "\n",

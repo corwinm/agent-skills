@@ -11,19 +11,20 @@ metadata:
 
 ## Purpose
 
-Use [`references/discovery-artifact.md`](references/discovery-artifact.md) when creating or exchanging structured discovery records.
+Use [`references/discovery-artifact.md`](references/discovery-artifact.md) when creating or exchanging structured discovery records. For meeting preparation or transcript processing, also use [`references/discovery-meeting-workflow.md`](references/discovery-meeting-workflow.md).
 
 Turn a solution-shaped request into a transparent assessment without pretending the agent already knows the underlying problem. Do not rewrite or discard the original request.
 
 ## Workflow
 
 1. **Capture verbatim.** Record the exact request, requester, source, urgency, stated rationale, and proposed solution. Complete when another person can distinguish what was actually requested from later interpretation.
-2. **Find the trigger.** Ask what happened recently, who encountered it, and what consequence prompted the request. Prefer a concrete episode over a general claim.
+2. **Choose the intake mode.** If the requester experienced the situation, ask what happened recently, who encountered it, and what consequence prompted the request. If the requester is preparing to meet affected people, do not force them to speculate; preserve unknowns and hand foundational information to `discovery-plan-design` for a facilitator guide.
 3. **Unpack the solution.** Identify the capabilities and assumptions embedded in the request. Ask what the requester expects to become easier or different.
 4. **Map affected groups.** List direct users, people performing work today, downstream recipients, operators, approvers, and groups bearing risk. Mark unconsulted groups.
 5. **Separate records.** Classify each statement as evidence, interpretation, assumption, constraint, desired outcome, or proposed solution. Do not promote an assertion to evidence without a source.
 6. **Assess readiness.** Choose one recommendation: clarify immediately, conduct lightweight discovery, investigate deeply, run a reversible experiment, fulfill as specified because the problem is already evidenced, or decline/defer.
 7. **Return an assessment.** Include the verbatim request, possible problem hypotheses labeled as tentative, evidence available, assumptions, missing perspectives, open questions, and recommended next action.
+8. **Prepare the handoff.** When discovery meetings are next, pass the decision needed, verbatim request, assumptions, tentative hypotheses, constraints, missing perspectives, and contradiction-seeking questions to `discovery-plan-design`.
 
 ## Question order
 
@@ -37,6 +38,7 @@ Ask only the next question that can materially change the recommendation. Good e
 - “What makes this proposed solution seem appropriate?”
 
 Do not make the requester complete a long generic questionnaire when an adaptive conversation is possible.
+Do not interview the requester as a proxy when they have asked for a guide to use with actual participants.
 
 ## Guardrails
 

@@ -77,6 +77,41 @@ test("review UI is generated from current canonical JSON without presentation fi
     assert.equal(existsSync(join(workspace, "presentation")), false);
   }));
 
+test("local review can show redacted meeting source content without exporting it", async () =>
+  running(async (base) => {
+    const response = await request(base, "/sources.html");
+    assert.equal(response.status, 200);
+    assert.match(await response.text(), /Yesterday a customer asked whether their fix was live/);
+  }));
+
+test("local review withholds transcripts when any participant denies discovery use", async () =>
+  running(async (base, workspace) => {
+    const manifestPath = join(workspace, "sources/meeting-001/meeting.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.participants.push({
+      participant_id: "participant-002",
+      pseudonym: "P2",
+      role: "Support representative",
+      consent: {
+        discovery_use: "not-granted",
+        direct_quote_use: "not-granted",
+        external_sharing: "not-granted",
+      },
+    });
+    writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
+    const transcriptPath = join(workspace, "sources/meeting-001/transcript.md");
+    writeFileSync(
+      transcriptPath,
+      readFileSync(transcriptPath, "utf8") +
+        "\n## seg-private | 00:09:00–00:09:10 | P2\n\nPrivate participant statement.\n",
+    );
+    const response = await request(base, "/sources.html");
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    assert.doesNotMatch(html, /Private participant statement/);
+    assert.match(html, /Transcript withheld by consent or privacy policy/);
+  }));
+
 test("HTTP API persists comments/replies and rejects non-UI file paths", async () =>
   running(async (base) => {
     assert.equal((await request(base, "/")).status, 200);

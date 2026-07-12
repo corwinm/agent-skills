@@ -57,6 +57,8 @@ See [`docs/discovery-artifact.md`](docs/discovery-artifact.md) for the portable 
 
 Discovery artifacts can live at the root of their own repository or inside a larger repository. Canonical JSON records remain the source of truth. The review server builds the interactive UI directly from current JSON, while an optional deterministic export produces a static HTML snapshot for sharing or archival.
 
+The workspace also supports a real meeting loop: preserve a foundational request, generate a facilitator guide and consent-aware capture contract under `sources/meeting-<id>/`, ingest a redacted transcript with stable segment locators, review extracted evidence, and adapt the next meeting to unresolved uncertainty.
+
 ```bash
 npm run export:example
 npm run review:example

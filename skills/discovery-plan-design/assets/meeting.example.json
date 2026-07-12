@@ -1,0 +1,59 @@
+{
+  "version": "0.1",
+  "id": "meeting-001",
+  "kind": "discovery-interview",
+  "status": "planned",
+  "title": "Discovery interview",
+  "decision_needed": "Replace with the decision this meeting informs.",
+  "learning_questions": [
+    {
+      "id": "lq-001",
+      "question": "Replace with the highest-priority learning question.",
+      "related_record_ids": ["request-001"]
+    }
+  ],
+  "participants": [
+    {
+      "participant_id": "participant-001",
+      "pseudonym": "P1",
+      "role": "unknown",
+      "perspective": "unknown",
+      "consent": {
+        "discovery_use": "unknown",
+        "direct_quote_use": "unknown",
+        "external_sharing": "unknown"
+      }
+    }
+  ],
+  "consent": {
+    "recording": "unknown",
+    "transcription": "unknown"
+  },
+  "privacy": {
+    "classification": "confidential",
+    "transcript_redacted": false,
+    "identity_map_stored_in_workspace": false
+  },
+  "artifacts": {
+    "guide": "guide.md",
+    "transcript": null,
+    "recording": null
+  },
+  "capture": {
+    "method": "unknown",
+    "language": "unknown",
+    "transcription": "unknown",
+    "known_gaps": []
+  },
+  "ingestion": {
+    "status": "not-ingested",
+    "ingested_at": null,
+    "evidence_ids": [],
+    "reviewed_by": null,
+    "limitations": []
+  },
+  "adapted_from": {
+    "meeting_ids": [],
+    "record_ids": ["request-001"]
+  }
+}

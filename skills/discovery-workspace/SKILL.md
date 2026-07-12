@@ -13,7 +13,7 @@ metadata:
 
 Operate a portable discovery workspace from initial creation through human review and evidence-aware revision. Structured records remain canonical; generated HTML is presentation; browser comments are structured inputs to the next revision.
 
-Read [`references/discovery-workspace.md`](references/discovery-workspace.md) before creating or changing a workspace. This skill bundles its complete Node.js 24+ runtime under `scripts/`; do not require the user to clone this repository or install repository-level npm dependencies.
+Read [`references/discovery-workspace.md`](references/discovery-workspace.md) before creating or changing a workspace. For meeting preparation and transcript ingestion, also read [`references/discovery-meeting-workflow.md`](references/discovery-meeting-workflow.md) and use the bundled meeting, guide, and transcript examples under `assets/`. This skill bundles its complete Node.js 24+ runtime under `scripts/`; do not require the user to clone this repository or install repository-level npm dependencies.
 
 ## When to use
 
@@ -27,13 +27,14 @@ Use this skill when an agent must do one or more of the following:
 - Review or apply a structured proposal under an authority policy
 - Serve the review UI dynamically from canonical records and preserve revision history
 - Export an optional static snapshot for sharing or archival
+- Prepare facilitator meeting bundles and review consent-aware transcript ingestion
 
 This is the operational and collaboration environment for the narrower discovery-stage skills. It does not replace evidence extraction, problem synthesis, stakeholder judgment, or experiment design.
 
 ## Workspace lifecycle
 
 1. **Locate or initialize.** Find `discovery.json`, or run the bundled `init` command for a new portable workspace. Preserve an existing valid format rather than replacing it casually.
-2. **Preserve canonical records.** Keep the original request, evidence, hypotheses, decisions, experiments, comments, sources, and revisions outside `presentation/`. Never reason from generated HTML when canonical records are available.
+2. **Preserve canonical records.** Keep the original request, evidence, hypotheses, decisions, experiments, comments, meeting bundles, sources, and revisions outside `presentation/`. Never reason from generated HTML when canonical records are available.
 3. **Validate provenance.** Ensure evidence links to sources, interpretations are not presented as evidence, hypotheses retain contradiction and uncertainty, and unknown fields remain unknown.
 4. **Assign stable identities.** Give every request, record, comment, and revision a stable ID. Target review comments with record ID plus optional field; selected text is context, not identity.
 5. **Configure authority.** Read `discovery.review.authority`; default to `risk-based`. Apply meaning-preserving corrections automatically only when authorized. Present material changes for explicit approval.
@@ -119,5 +120,7 @@ Detailed views must expose stable `data-record-id` and `data-field` anchors. Pre
 - [ ] Material changes remain proposals until approved
 - [ ] Revision history links changes to triggering comments
 - [ ] Resolved browser threads are exported
+- [ ] Meeting guides target a decision and preserve learning-question IDs
+- [ ] Transcript evidence resolves to consent-aware meeting bundles and stable segments
 - [ ] `check` reports canonical records and links valid
 - [ ] Any requested static export is generated from the intended canonical revision

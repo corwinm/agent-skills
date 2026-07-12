@@ -11,7 +11,7 @@ metadata:
 
 ## Purpose
 
-Use [`references/discovery-artifact.md`](references/discovery-artifact.md) when creating or exchanging structured discovery records.
+Use [`references/discovery-artifact.md`](references/discovery-artifact.md) when creating or exchanging structured discovery records. For meeting preparation or transcript processing, also use [`references/discovery-meeting-workflow.md`](references/discovery-meeting-workflow.md).
 
 Design the smallest credible research plan that can change a decision. Do not default to a fixed number of interviews or a broad research program.
 
@@ -22,7 +22,7 @@ Design the smallest credible research plan that can change a decision. Do not de
 3. **Rank uncertainty.** Prioritize unknowns by consequence if wrong, current uncertainty, and cost of learning. Explain rankings qualitatively.
 4. **Choose methods.** Match each priority question to a method: interview for experience and meaning, observation for actual workflow, records for history, analytics for behavior at scale, prototype for response to an intervention.
 5. **Sample perspectives.** Include directly affected people, edge cases, operators, downstream groups, decision makers, and dissenting or underserved groups. Explain why each perspective matters.
-6. **Prepare guides.** Write neutral prompts around recent episodes. Avoid presenting the proposed solution unless evaluating it is explicitly part of the study.
+6. **Prepare a meeting bundle.** Create `sources/meeting-<id>/meeting.json` plus `guide.md` using the bundled assets in this skill. Link learning questions to the pending decision and existing record IDs. Include a neutral episode-based guide, counterexample prompts, agenda, opening consent script, capture plan, privacy handling, and post-meeting transcript instructions. Avoid presenting the proposed solution unless evaluating it is explicitly part of the study.
 7. **Set stopping conditions.** Define what finding would change the decision, what evidence is sufficient for the next reversible step, and when to extend research.
 8. **Plan synthesis and review.** Assign capture format, provenance, privacy handling, synthesis owner, stakeholder review, and decision date.
 
@@ -37,10 +37,13 @@ Produce a compact plan containing:
 - Participant/source map
 - Method per question
 - Interview or observation guide
+- Portable meeting manifest and capture contract
 - Capture and consent considerations
 - Contradiction-seeking strategy
 - Stopping conditions
 - Synthesis and decision checkpoints
+
+For later meetings, populate `adapted_from` and derive questions from unresolved contradictions, weak assumptions, missing perspectives, and evidence that would change the decision. Do not repeat a generic guide when prior evidence exists.
 
 ## Guardrails
 

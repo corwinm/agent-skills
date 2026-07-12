@@ -47,7 +47,7 @@ node scripts/workspace.ts check /absolute/path/to/workspace
 node scripts/workspace.ts review /absolute/path/to/workspace
 ```
 
-An agent with background-process support should run the second command itself, wait for the listening message, verify the URL, and report it to the user while leaving the tracked process running. No repository clone or npm installation is required.
+An agent with background-process support should run the `review` command itself, wait for the listening message, verify the URL, and report it to the user while leaving the tracked process running. No repository clone or npm installation is required.
 
 For this repository's example, the equivalent convenience commands are:
 
@@ -69,6 +69,23 @@ default CLI adapter writes one versioned JSON request to stdin, closes stdin, an
 one versioned JSON response from stdout; diagnostics belong on stderr. The local process binds
 only to `127.0.0.1`, serves only single-level generated presentation files, and is not an
 authenticated multi-user service.
+
+## Discovery meeting bundles
+
+Meeting preparation and transcript ingestion use a portable source bundle:
+
+```text
+sources/meeting-<id>/
+├── meeting.json
+├── guide.md
+└── transcript.md
+```
+
+`meeting.json` is the canonical manifest for the pending decision, stable learning-question IDs, participant pseudonyms, separate consent scopes, privacy handling, artifact paths, capture limitations, ingestion status, extracted evidence IDs, and prior meetings or records that shaped the guide. Recording and transcription are meeting-level capture permissions. Discovery use, direct quotation, and external sharing are recorded per participant; participant-specific permission governs evidence attributed to that speaker. `unknown` never means granted. Use the examples in `assets/meeting.example.json`, `assets/guide.example.md`, and `assets/transcript.example.md`.
+
+The guide is facilitator-facing Markdown. It should include neutral recent-episode prompts, counterexamples, contradiction-seeking prompts, an opening consent script, capture instructions, and stopping conditions. A later guide must adapt to unresolved evidence and missing perspectives rather than repeat the initial questionnaire.
+
+The transcript uses immutable `seg-...` headings with timestamps and speaker pseudonyms. Evidence extracted from it uses the meeting ID as `source_id` and a `source_locator` with the transcript path and segment ID. The validator checks bundle-local artifact paths, consent states, unique transcript segments, evidence locators, and ingestion evidence links. The loopback browser Meetings view may show guides and consent-authorized redacted transcripts for local review. Static export withholds guide and transcript bodies by default while retaining meeting metadata and ingestion state. It also withholds meeting-derived evidence when participant sharing consent is absent and conservatively removes dependent hypotheses, experiments, decisions, comments, and revision summaries so the export does not leak conclusions or leave dangling provenance. Do not place unredacted or unauthorized source material in a portable workspace.
 
 ## Root record
 
@@ -177,9 +194,9 @@ A comment resolution links to changed records and explains what changed or why n
 
 ## Browser review workflow
 
-1. Create or update canonical records.
-2. Run the renderer to create the browser presentation.
-3. Start the interactive review service for the workspace.
+1. Create or update canonical records and meeting bundles.
+2. Start the interactive review service, which builds the UI directly from current JSON and source bundles.
+3. Review the prepared guide or ingested evidence in the browser.
 4. Reviewers comment on pages or stable record/field targets in the browser.
 5. Active threads and agent jobs persist in the review database.
 6. A reviewer sends a thread to the configured agent adapter.

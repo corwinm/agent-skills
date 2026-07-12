@@ -6,6 +6,7 @@ import {
   readdirSync,
   renameSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -52,6 +53,20 @@ function workspace(root: string): void {
       statement: "Support asks engineering whether a fix is live.",
       source_id: "source-001",
       limitations: ["Frequency is not established"],
+    },
+    {
+      id: "evidence-002",
+      type: "direct-quote",
+      statement: "Remote context was difficult to recover.",
+      source_id: "meeting-001",
+      source_excerpt: "I had to reconstruct what the agent was doing.",
+      source_locator: {
+        path: "sources/meeting-001/transcript.md",
+        segment_id: "seg-0002",
+        start_time: "00:04:10",
+        speaker: "P1",
+      },
+      limitations: ["One participant"],
     },
   ]);
   writeJson(join(root, "records/hypotheses.json"), [
@@ -105,6 +120,47 @@ function workspace(root: string): void {
       summary: "Added initial problem hypothesis",
     },
   ]);
+  writeJson(join(root, "sources/meeting-001/meeting.json"), {
+    version: "0.1",
+    id: "meeting-001",
+    kind: "discovery-interview",
+    status: "ingested",
+    title: "Remote workflow interview",
+    learning_questions: [
+      { id: "lq-001", question: "Where does remote context break down?", related_record_ids: [] },
+    ],
+    participants: [
+      {
+        participant_id: "participant-001",
+        pseudonym: "P1",
+        role: "Developer",
+        consent: {
+          discovery_use: "granted",
+          direct_quote_use: "granted-with-anonymization",
+          external_sharing: "granted-with-anonymization",
+        },
+      },
+      { participant_id: "facilitator-001", pseudonym: "F1", role: "Facilitator" },
+    ],
+    consent: {
+      recording: "granted",
+      transcription: "granted",
+      discovery_use: "granted",
+      direct_quote_use: "granted-with-anonymization",
+      external_sharing: "granted-with-anonymization",
+    },
+    privacy: { classification: "confidential", transcript_redacted: true },
+    artifacts: { guide: "guide.md", transcript: "transcript.md" },
+    ingestion: { status: "ingested", evidence_ids: ["evidence-002"] },
+  });
+  writeFileSync(
+    join(root, "sources/meeting-001/guide.md"),
+    "# Guide\n\nAsk about recent remote development episodes.\n",
+  );
+  writeFileSync(
+    join(root, "sources/meeting-001/transcript.md"),
+    "# Transcript\n\n## seg-0001 | 00:00:01 | F1\n\nDo you consent?\n\n## seg-0002 | 00:04:10 | P1\n\nI had to reconstruct what the agent was doing.\n",
+  );
 }
 function run(root: string, ...args: string[]) {
   return spawnSync(process.execPath, [RENDERER, root, ...args], { cwd: ROOT, encoding: "utf8" });
@@ -132,6 +188,7 @@ test("renders hybrid pages, manifest, anchors, context, and escaped HTML", () =>
         "hypotheses.html",
         "decisions.html",
         "experiment.html",
+        "sources.html",
         "review.html",
         "artifact.css",
         "artifact.js",
@@ -163,8 +220,124 @@ test("renders hybrid pages, manifest, anchors, context, and escaped HTML", () =>
       assert.ok(review.includes(text));
     const manifest = JSON.parse(readFileSync(join(root, "presentation/manifest.json"), "utf8"));
     assert.equal(manifest.workspace_id, "deployment-visibility");
-    assert.equal(manifest.renderer_version, "0.1.0");
+    assert.equal(manifest.renderer_version, "0.2.0");
     assert.match(manifest.source_digest, /^sha256:[0-9a-f]{64}$/);
+    const sources = readFileSync(join(root, "presentation/sources.html"), "utf8");
+    for (const text of [
+      "Remote workflow interview",
+      "Where does remote context break down?",
+      "Guide withheld from static export.",
+      "Transcript withheld by consent or privacy policy.",
+      'data-record-id="meeting-001"',
+    ])
+      assert.ok(sources.includes(text), text);
+  }));
+test("meeting bundles validate transcript locators and ingestion evidence links", () =>
+  temporary((root) => {
+    workspace(root);
+    const evidencePath = join(root, "records/evidence.json");
+    const evidence = JSON.parse(readFileSync(evidencePath, "utf8"));
+    evidence[1].source_locator.segment_id = "seg-missing";
+    writeJson(evidencePath, evidence);
+    const result = run(root);
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /seg-missing/);
+  }));
+test("meeting evidence locator path must match the configured transcript", () =>
+  temporary((root) => {
+    workspace(root);
+    const evidencePath = join(root, "records/evidence.json");
+    const evidence = JSON.parse(readFileSync(evidencePath, "utf8"));
+    evidence[1].source_locator.path = "sources/other/transcript.md";
+    writeJson(evidencePath, evidence);
+    const result = run(root);
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /other\/transcript/);
+  }));
+test("meeting bundles reject direct quotes when quotation consent is absent", () =>
+  temporary((root) => {
+    workspace(root);
+    const manifestPath = join(root, "sources/meeting-001/meeting.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.participants[0].consent.direct_quote_use = "not-granted";
+    writeJson(manifestPath, manifest);
+    const result = run(root);
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /direct.quote/i);
+  }));
+test("transcript speakers must be declared meeting participants", () =>
+  temporary((root) => {
+    workspace(root);
+    const transcriptPath = join(root, "sources/meeting-001/transcript.md");
+    writeFileSync(
+      transcriptPath,
+      readFileSync(transcriptPath, "utf8") +
+        "\n## seg-undeclared | 00:10:00–00:10:10 | Participant 9\n\nUndeclared speaker.\n",
+    );
+    const result = run(root);
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /speaker Participant 9 is not a declared participant/);
+  }));
+test("static export withholds meeting-derived evidence without participant sharing consent", () =>
+  temporary((root) => {
+    workspace(root);
+    const manifestPath = join(root, "sources/meeting-001/meeting.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.participants[0].consent.external_sharing = "not-granted";
+    writeJson(manifestPath, manifest);
+    const hypothesesPath = join(root, "records/hypotheses.json");
+    const canonicalHypotheses = JSON.parse(readFileSync(hypothesesPath, "utf8"));
+    canonicalHypotheses[0].supporting_evidence_ids.push("evidence-002");
+    writeJson(hypothesesPath, canonicalHypotheses);
+    const result = run(root);
+    assert.equal(result.status, 0, result.stderr);
+    const evidence = readFileSync(join(root, "presentation/evidence.html"), "utf8");
+    const overview = readFileSync(join(root, "presentation/index.html"), "utf8");
+    const hypotheses = readFileSync(join(root, "presentation/hypotheses.html"), "utf8");
+    const decisions = readFileSync(join(root, "presentation/decisions.html"), "utf8");
+    assert.doesNotMatch(evidence, /Remote context was difficult to recover/);
+    assert.doesNotMatch(overview, /Remote context was difficult to recover/);
+    assert.doesNotMatch(hypotheses, /Deployment state requires interpretation/);
+    assert.doesNotMatch(decisions, /Run a reversible experiment/);
+    assert.match(overview, /Withheld from static export/);
+  }));
+test("meeting evidence speaker must match the transcript segment speaker", () =>
+  temporary((root) => {
+    workspace(root);
+    const manifestPath = join(root, "sources/meeting-001/meeting.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.participants.push({
+      participant_id: "participant-002",
+      pseudonym: "P2",
+      role: "Developer",
+      consent: {
+        discovery_use: "granted",
+        direct_quote_use: "granted-with-anonymization",
+        external_sharing: "granted-with-anonymization",
+      },
+    });
+    writeJson(manifestPath, manifest);
+    const evidencePath = join(root, "records/evidence.json");
+    const evidence = JSON.parse(readFileSync(evidencePath, "utf8"));
+    evidence[1].source_locator.speaker = "P2";
+    writeJson(evidencePath, evidence);
+    const result = run(root);
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /speaker does not match transcript segment/);
+  }));
+test("symlinked sources roots are rejected", () =>
+  temporary((root) => {
+    workspace(root);
+    const external = mkdtempSync(join(tmpdir(), "external-sources-"));
+    try {
+      rmSync(join(root, "sources"), { recursive: true });
+      symlinkSync(external, join(root, "sources"), "dir");
+      const result = run(root);
+      assert.notEqual(result.status, 0);
+      assert.match(result.stderr, /sources directory must not be a symbolic link/);
+    } finally {
+      rmSync(external, { recursive: true, force: true });
+    }
   }));
 test("render is deterministic and check detects stale output", () =>
   temporary((root) => {

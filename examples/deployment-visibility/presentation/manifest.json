@@ -6,6 +6,7 @@
     "hypotheses.html",
     "decisions.html",
     "experiment.html",
+    "sources.html",
     "review.html",
     "artifact.css",
     "artifact.js",
@@ -17,9 +18,10 @@
     "hypotheses.html",
     "decisions.html",
     "experiment.html",
+    "sources.html",
     "review.html"
   ],
-  "renderer_version": "0.1.0",
-  "source_digest": "sha256:48bae52e2f1145186adc775ee7428c6b369625a6fb66423369ab039827dee623",
+  "renderer_version": "0.2.0",
+  "source_digest": "sha256:f7612537f55950a9c599ae8d1da8ca0fe370676c27c3c5797467952326896168",
   "workspace_id": "deployment-visibility"
 }
