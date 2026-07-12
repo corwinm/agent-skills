@@ -26,18 +26,17 @@ Compatible agents and marketplaces can discover each directory containing a `SKI
 
 Skills for helping software teams turn requested solutions into traceable, evidence-backed problem decisions.
 
-| Skill                             | Purpose                                                                                      |
-| --------------------------------- | -------------------------------------------------------------------------------------------- |
-| `solution-request-triage`         | Separate a requested solution from the problem and decide whether discovery is needed.       |
-| `adaptive-discovery-intake`       | Conduct an asynchronous, adaptive conversation with a requester.                             |
-| `discovery-plan-design`           | Plan interviews, observations, document review, and data collection around uncertainty.      |
-| `discovery-evidence-extraction`   | Extract traceable evidence from interviews, notes, tickets, and observations.                |
-| `problem-synthesis`               | Form competing problem hypotheses without erasing contradictions.                            |
-| `problem-framing-review`          | Facilitate stakeholder review, dissent, and readiness decisions.                             |
-| `experiment-increment-design`     | Design the cheapest useful experiment or smallest valuable increment.                        |
-| `evidence-backed-problem-brief`   | Assemble a concise decision brief grounded in cited evidence.                                |
-| `discovery-artifact-presentation` | Organize canonical discovery records and render a committed HTML review workspace.           |
-| `discovery-comment-resolution`    | Consume structured review comments and update artifacts under a risk-based authority policy. |
+| Skill                           | Purpose                                                                                 |
+| ------------------------------- | --------------------------------------------------------------------------------------- |
+| `solution-request-triage`       | Separate a requested solution from the problem and decide whether discovery is needed.  |
+| `adaptive-discovery-intake`     | Conduct an asynchronous, adaptive conversation with a requester.                        |
+| `discovery-plan-design`         | Plan interviews, observations, document review, and data collection around uncertainty. |
+| `discovery-evidence-extraction` | Extract traceable evidence from interviews, notes, tickets, and observations.           |
+| `problem-synthesis`             | Form competing problem hypotheses without erasing contradictions.                       |
+| `problem-framing-review`        | Facilitate stakeholder review, dissent, and readiness decisions.                        |
+| `experiment-increment-design`   | Design the cheapest useful experiment or smallest valuable increment.                   |
+| `evidence-backed-problem-brief` | Assemble a concise decision brief grounded in cited evidence.                           |
+| `discovery-workspace`           | Create, present, review, revise, and verify a portable discovery workspace.             |
 
 These skills support a mixed workflow: an agent can conduct initial asynchronous intake, then assist a human facilitator with research, synthesis, alignment, and experiment design. They do not replace product judgment or claim to discover the “real problem” automatically.
 
@@ -63,7 +62,7 @@ npm run render:example
 npm run review:example
 ```
 
-Open <http://127.0.0.1:4173>, then use the pencil beside any reviewable statement or the page-level comment button. Browser threads persist in SQLite, can be sent to a portable CLI agent, and are exported into the workspace when resolved. When `discovery-artifact-presentation` is installed independently, its own `scripts/review_server.ts` and supporting modules are included; an agent can launch that bundled server directly without cloning this repository or installing npm dependencies. Run `node scripts/render_discovery.ts path/to/discovery --check` to verify committed output.
+Open <http://127.0.0.1:4173>, then use the pencil beside any reviewable statement or the page-level comment button. Browser threads persist in SQLite, can be sent to a portable CLI agent, and are exported into the workspace when resolved. When `discovery-workspace` is installed independently, its `scripts/workspace.ts` command can initialize, render, check, or launch the complete review application without cloning this repository or installing npm dependencies.
 
 See [`docs/discovery-workspace.md`](docs/discovery-workspace.md) and the committed [`examples/deployment-visibility`](examples/deployment-visibility) workspace.
 

@@ -17,10 +17,8 @@ import { replacePresentation } from "../scripts/render_discovery.ts";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const RENDERER = join(ROOT, "scripts/render_discovery.ts");
-const BUNDLED_RENDERER = join(
-  ROOT,
-  "skills/discovery-artifact-presentation/scripts/render_discovery.ts",
-);
+const BUNDLED_RENDERER = join(ROOT, "skills/discovery-workspace/scripts/render_discovery.ts");
+const BUNDLED_WORKSPACE_CLI = join(ROOT, "skills/discovery-workspace/scripts/workspace.ts");
 function writeJson(path: string, value: unknown): void {
   mkdirSync(resolve(path, ".."), { recursive: true });
   writeFileSync(path, JSON.stringify(value, null, 2) + "\n");
@@ -254,6 +252,34 @@ test("invalid authority and unknown comment field are rejected", () =>
     writeJson(path, comment);
     assert.match(run(root).stderr, /not-a-field/);
   }));
+test("workspace CLI initializes, renders, and checks a new workspace", () =>
+  temporary((root) => {
+    const target = join(root, "customer-onboarding");
+    const initialized = spawnSync(process.execPath, [BUNDLED_WORKSPACE_CLI, "init", target], {
+      cwd: ROOT,
+      encoding: "utf8",
+    });
+    assert.equal(initialized.status, 0, initialized.stderr);
+    assert.ok(readFileSync(join(target, "discovery.json"), "utf8").includes("customer-onboarding"));
+    assert.equal(
+      spawnSync(process.execPath, [BUNDLED_WORKSPACE_CLI, "render", target], {
+        cwd: ROOT,
+        encoding: "utf8",
+      }).status,
+      0,
+    );
+    assert.equal(
+      spawnSync(process.execPath, [BUNDLED_WORKSPACE_CLI, "check", target], {
+        cwd: ROOT,
+        encoding: "utf8",
+      }).status,
+      0,
+    );
+    assert.ok(
+      readFileSync(join(target, "presentation/index.html"), "utf8").includes("Customer onboarding"),
+    );
+  }));
+
 test("bundled renderer remains a self-contained TypeScript entrypoint", () =>
   temporary((root) => {
     workspace(root);

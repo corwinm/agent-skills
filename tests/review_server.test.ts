@@ -39,26 +39,27 @@ const request = async (base: string, path: string, options?: RequestInit) =>
     },
   });
 
-test("independently installed review skills bundle a runnable server", async () => {
-  for (const skillName of ["discovery-artifact-presentation", "discovery-comment-resolution"]) {
-    const temporary = mkdtempSync(join(tmpdir(), "installed-skill-test-"));
-    const installedSkill = join(temporary, skillName);
-    const workspace = join(temporary, "workspace");
-    cpSync(join(ROOT, "skills", skillName), installedSkill, { recursive: true });
-    cpSync(WORKSPACE, workspace, { recursive: true });
-    const module = (await import(
-      pathToFileURL(join(installedSkill, "scripts/review_server.ts")).href
-    )) as { createReviewServer: typeof createReviewServer };
-    const server = module.createReviewServer(workspace);
-    await new Promise<void>((resolveListen) => server.listen(0, "127.0.0.1", resolveListen));
-    const address = server.address();
-    assert.ok(address && typeof address === "object");
-    try {
-      assert.equal((await request(`http://127.0.0.1:${address.port}`, "/")).status, 200);
-    } finally {
-      await new Promise<void>((done) => server.close(() => done()));
-      rmSync(temporary, { recursive: true, force: true });
-    }
+test("independently installed discovery workspace bundles a runnable server", async () => {
+  assert.equal(existsSync(join(ROOT, "skills/discovery-artifact-presentation")), false);
+  assert.equal(existsSync(join(ROOT, "skills/discovery-comment-resolution")), false);
+  const skillName = "discovery-workspace";
+  const temporary = mkdtempSync(join(tmpdir(), "installed-skill-test-"));
+  const installedSkill = join(temporary, skillName);
+  const workspace = join(temporary, "workspace");
+  cpSync(join(ROOT, "skills", skillName), installedSkill, { recursive: true });
+  cpSync(WORKSPACE, workspace, { recursive: true });
+  const module = (await import(
+    pathToFileURL(join(installedSkill, "scripts/review_server.ts")).href
+  )) as { createReviewServer: typeof createReviewServer };
+  const server = module.createReviewServer(workspace);
+  await new Promise<void>((resolveListen) => server.listen(0, "127.0.0.1", resolveListen));
+  const address = server.address();
+  assert.ok(address && typeof address === "object");
+  try {
+    assert.equal((await request(`http://127.0.0.1:${address.port}`, "/")).status, 200);
+  } finally {
+    await new Promise<void>((done) => server.close(() => done()));
+    rmSync(temporary, { recursive: true, force: true });
   }
 });
 
@@ -170,6 +171,10 @@ test("agent queue uses portable one-request/one-response CLI protocol", async ()
         job.response.proposal.after,
       ),
     );
+    const discovery = JSON.parse(readFileSync(join(workspace, "discovery.json"), "utf8"));
+    const revisions = JSON.parse(readFileSync(join(workspace, "history/revisions.json"), "utf8"));
+    assert.equal(discovery.updated_at, revisions.at(-1).created_at);
+    assert.notEqual(discovery.updated_at, "2026-07-11T18:00:00Z");
     assert.ok(existsSync(join(workspace, "comments", `${created.id}.json`)));
     const adapter = new CliAgentAdapter(process.execPath, [
       join(ROOT, "scripts/mock_review_agent.ts"),
@@ -249,6 +254,7 @@ test("failed regeneration rolls back the canonical record and revision ledger", 
     const canonicalPath = join(workspace, "records/hypotheses.json");
     const ledgerPath = join(workspace, "history/revisions.json");
     const canonicalBefore = readFileSync(canonicalPath, "utf8");
+    const discoveryBefore = readFileSync(join(workspace, "discovery.json"), "utf8");
     const ledgerBefore = readFileSync(ledgerPath, "utf8");
     const created = await (
       await request(base, "/api/comments", {
@@ -276,6 +282,7 @@ test("failed regeneration rolls back the canonical record and revision ledger", 
     });
     assert.equal(applied.status, 400);
     assert.equal(readFileSync(canonicalPath, "utf8"), canonicalBefore);
+    assert.equal(readFileSync(join(workspace, "discovery.json"), "utf8"), discoveryBefore);
     assert.equal(readFileSync(ledgerPath, "utf8"), ledgerBefore);
     assert.equal(
       (await (await request(base, `/api/comments/${created.id}`)).json()).status,

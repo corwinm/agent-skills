@@ -38,11 +38,13 @@ boundary, while agent integrations satisfy `AgentAdapter`.
 
 ## Interactive local review
 
-Requires Node.js 24 or newer. An independently installed `discovery-artifact-presentation` skill contains the renderer, review server, SQLite storage adapter, CLI agent adapter, and deterministic mock agent. From the installed skill directory, run:
+Requires Node.js 24 or newer. An independently installed `discovery-workspace` skill contains the workspace CLI, renderer, review server, SQLite storage adapter, CLI agent adapter, and deterministic mock agent. From the installed skill directory, run:
 
 ```bash
-node scripts/render_discovery.ts /absolute/path/to/workspace
-node scripts/review_server.ts /absolute/path/to/workspace
+node scripts/workspace.ts init /absolute/path/to/new-workspace
+node scripts/workspace.ts render /absolute/path/to/workspace
+node scripts/workspace.ts check /absolute/path/to/workspace
+node scripts/workspace.ts review /absolute/path/to/workspace
 ```
 
 An agent with background-process support should run the second command itself, wait for the listening message, verify the URL, and report it to the user while leaving the tracked process running. No repository clone or npm installation is required.
@@ -59,7 +61,7 @@ Open <http://127.0.0.1:4173>. Use the pencil beside a stable record/field, or **
 page**, to open the review drawer. Threads can receive replies, be resolved, or be sent to the
 deterministic mock agent. Agent proposals show their structured before/after values and require
 an explicit **Apply proposal** action. Set `PORT` or pass a numeric second argument to choose a
-port: `node scripts/review_server.ts path/to/workspace 8080`.
+port: `node scripts/workspace.ts review path/to/workspace 8080`.
 
 The HTTP surface is deliberately portable: JSON resources under `/api/comments` and `/api/jobs`,
 the `ReviewStorage` interface for hosted persistence, and `AgentAdapter` for hosted queues. The

@@ -86,12 +86,22 @@ function applyProposal(
   )
     throw new Error("proposal is stale or target is missing");
   found.record[proposal.field] = proposal.after;
-  writeFileSync(found.file, JSON.stringify(found.document, null, 2) + "\n");
+  const createdAt = new Date().toISOString();
+  const discoveryPath = join(root, "discovery.json");
+  if (found.file === discoveryPath) {
+    (found.document as Record<string, unknown>).updated_at = createdAt;
+    writeFileSync(found.file, JSON.stringify(found.document, null, 2) + "\n");
+  } else {
+    writeFileSync(found.file, JSON.stringify(found.document, null, 2) + "\n");
+    const discovery = JSON.parse(readFileSync(discoveryPath, "utf8")) as Record<string, unknown>;
+    discovery.updated_at = createdAt;
+    writeFileSync(discoveryPath, JSON.stringify(discovery, null, 2) + "\n");
+  }
   const ledgerPath = join(root, "history/revisions.json");
   const ledger = JSON.parse(readFileSync(ledgerPath, "utf8")) as unknown[];
   ledger.push({
     id: `revision-${crypto.randomUUID()}`,
-    created_at: new Date().toISOString(),
+    created_at: createdAt,
     triggered_by: [commentId],
     changed_records: [proposal.record_id],
     summary: proposal.summary,
@@ -244,13 +254,16 @@ export function createReviewServer(
             if (!proposalTarget.file)
               return json(res, 409, { error: "proposal target is missing" });
             const ledgerPath = join(root, "history/revisions.json");
+            const discoveryPath = join(root, "discovery.json");
             const canonicalBefore = readFileSync(proposalTarget.file);
+            const discoveryBefore = readFileSync(discoveryPath);
             const ledgerBefore = readFileSync(ledgerPath);
             try {
               applyProposal(root, response.proposal, thread.target, String(job.thread_id));
               regenerate(root);
             } catch (error) {
               writeFileSync(proposalTarget.file, canonicalBefore);
+              writeFileSync(discoveryPath, discoveryBefore);
               writeFileSync(ledgerPath, ledgerBefore);
               throw error;
             }
