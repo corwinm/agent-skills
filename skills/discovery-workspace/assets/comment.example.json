@@ -1,0 +1,14 @@
+{
+  "id": "comment-001",
+  "target": {
+    "record_id": "problem-001",
+    "record_type": "problem-hypothesis",
+    "field": "difficulty"
+  },
+  "selection": { "exact": "", "prefix": "", "suffix": "" },
+  "body": "",
+  "author": { "github": "" },
+  "created_at": "",
+  "status": "open",
+  "resolution": null
+}

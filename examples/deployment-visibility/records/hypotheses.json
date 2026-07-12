@@ -1,0 +1,26 @@
+[
+  {
+    "id": "problem-001",
+    "affected_group": "Billing and payments support",
+    "situation": "Responding to customers waiting for a fix",
+    "goal": "Determine whether a named fix is available",
+    "difficulty": "Existing deployment state requires developer interpretation",
+    "consequence": "Customer responses are delayed and engineering is interrupted",
+    "supporting_evidence_ids": ["evidence-001", "evidence-002"],
+    "contradicting_evidence_ids": [],
+    "unknowns": ["Monthly request frequency", "Whether other support groups share the need"],
+    "status": "leading"
+  },
+  {
+    "id": "problem-002",
+    "affected_group": "Engineering leadership",
+    "situation": "Reviewing delivery across applications",
+    "goal": "Understand organization-wide release activity",
+    "difficulty": "Deployment information is fragmented",
+    "consequence": "Portfolio reporting requires manual collection",
+    "supporting_evidence_ids": [],
+    "contradicting_evidence_ids": [],
+    "unknowns": ["Which decision this visibility would inform"],
+    "status": "candidate"
+  }
+]

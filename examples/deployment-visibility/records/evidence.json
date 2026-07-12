@@ -1,0 +1,35 @@
+[
+  {
+    "id": "evidence-001",
+    "type": "reported-experience",
+    "statement": "Support asks engineering whether a customer fix is live before replying.",
+    "source_id": "source-support-01",
+    "limitations": ["One participant", "Frequency is not established"]
+  },
+  {
+    "id": "evidence-002",
+    "type": "observation",
+    "statement": "A developer checked both CI and runtime deployment state to answer one request.",
+    "source_id": "source-observation-01",
+    "limitations": ["One observed request"]
+  },
+  {
+    "id": "evidence-003",
+    "type": "direct-quote",
+    "statement": "\"I checked the build, then messaged the application team because I still couldn't tell.\"",
+    "source_id": "meeting-001",
+    "source_excerpt": "I checked the build, then messaged the application team because I still couldn't tell.",
+    "source_locator": {
+      "path": "sources/meeting-001/transcript.md",
+      "segment_id": "seg-0003",
+      "start_time": "00:05:14",
+      "end_time": "00:05:41",
+      "speaker": "P1"
+    },
+    "limitations": [
+      "One participant",
+      "Reported experience rather than direct observation",
+      "Frequency is not established"
+    ]
+  }
+]

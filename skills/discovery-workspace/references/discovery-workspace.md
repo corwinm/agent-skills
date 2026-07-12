@@ -1,0 +1,216 @@
+# Discovery workspace specification
+
+A discovery workspace is a portable folder that can be the root of its own repository or a subfolder inside another repository. `discovery.json` identifies the workspace root.
+
+## Layout
+
+```text
+discovery-workspace/
+├── discovery.json
+├── records/
+│   ├── evidence.json
+│   ├── hypotheses.json
+│   ├── decisions.json
+│   └── experiments.json
+├── sources/
+├── comments/
+│   └── comment-<id>.json
+├── history/
+│   └── revisions.json
+└── presentation/
+    ├── index.html
+    ├── evidence.html
+    ├── hypotheses.html
+    ├── decisions.html
+    ├── experiment.html
+    ├── review.html
+    ├── artifact.css
+    ├── artifact.js
+    └── manifest.json
+```
+
+Canonical records, source material, comments, and revision history are the source of truth. Files under `presentation/` are deterministic generated output and must not be edited directly.
+
+Active browser-review threads and agent jobs live in `.review/review.sqlite`, outside the
+canonical presentation. Resolved threads are exported to `comments/`; applied proposals append
+the revision ledger. The SQLite implementation satisfies the hosted-compatible `ReviewStorage`
+boundary, while agent integrations satisfy `AgentAdapter`.
+
+## Interactive local review
+
+Requires Node.js 24 or newer. An independently installed `discovery-workspace` skill contains the workspace CLI, renderer, review server, SQLite storage adapter, CLI agent adapter, and deterministic mock agent. From the installed skill directory, run:
+
+```bash
+node scripts/workspace.ts init /absolute/path/to/new-workspace
+node scripts/workspace.ts export /absolute/path/to/workspace
+node scripts/workspace.ts check /absolute/path/to/workspace
+node scripts/workspace.ts review /absolute/path/to/workspace
+```
+
+An agent with background-process support should run the `review` command itself, wait for the listening message, verify the URL, and report it to the user while leaving the tracked process running. No repository clone or npm installation is required.
+
+For this repository's example, the equivalent convenience commands are:
+
+```bash
+npm install
+npm run export:example
+npm run review:example
+```
+
+Open <http://127.0.0.1:4173>. Use the pencil beside a stable record/field, or **Comment on
+page**, to open the review drawer. Threads can receive replies, be resolved, or be sent to the
+deterministic mock agent. Agent proposals show their structured before/after values and require
+an explicit **Apply proposal** action. Set `PORT` or pass a numeric second argument to choose a
+port: `node scripts/workspace.ts review path/to/workspace 8080`.
+
+The HTTP surface is deliberately portable: JSON resources under `/api/comments` and `/api/jobs`,
+the `ReviewStorage` interface for hosted persistence, and `AgentAdapter` for hosted queues. The
+default CLI adapter writes one versioned JSON request to stdin, closes stdin, and accepts exactly
+one versioned JSON response from stdout; diagnostics belong on stderr. The local process binds
+only to `127.0.0.1`, serves only single-level generated presentation files, and is not an
+authenticated multi-user service.
+
+## Discovery meeting bundles
+
+Meeting preparation and transcript ingestion use a portable source bundle:
+
+```text
+sources/meeting-<id>/
+├── meeting.json
+├── guide.md
+└── transcript.md
+```
+
+`meeting.json` is the canonical manifest for the pending decision, stable learning-question IDs, participant pseudonyms, separate consent scopes, privacy handling, artifact paths, capture limitations, ingestion status, extracted evidence IDs, and prior meetings or records that shaped the guide. Recording and transcription are meeting-level capture permissions. Discovery use, direct quotation, and external sharing are recorded per participant; participant-specific permission governs evidence attributed to that speaker. `unknown` never means granted. Use the examples in `assets/meeting.example.json`, `assets/guide.example.md`, and `assets/transcript.example.md`.
+
+The guide is facilitator-facing Markdown. It should include neutral recent-episode prompts, counterexamples, contradiction-seeking prompts, an opening consent script, capture instructions, and stopping conditions. A later guide must adapt to unresolved evidence and missing perspectives rather than repeat the initial questionnaire.
+
+The transcript uses immutable `seg-...` headings with timestamps and speaker pseudonyms. Evidence extracted from it uses the meeting ID as `source_id` and a `source_locator` with the transcript path and segment ID. The validator checks bundle-local artifact paths, consent states, unique transcript segments, evidence locators, and ingestion evidence links. The loopback browser Meetings view may show guides and consent-authorized redacted transcripts for local review. Static export withholds guide and transcript bodies by default while retaining meeting metadata and ingestion state. It also withholds meeting-derived evidence when participant sharing consent is absent and conservatively removes dependent hypotheses, experiments, decisions, comments, and revision summaries so the export does not leak conclusions or leave dangling provenance. Do not place unredacted or unauthorized source material in a portable workspace.
+
+## Root record
+
+`discovery.json` contains:
+
+- `version`: workspace schema version
+- `id`: stable workspace ID
+- `title`
+- `stage`
+- `updated_at`: timestamp of the latest canonical revision
+- `request`: preserved original request
+- `decision_needed`
+- `recommendation`
+- `review.mode`: normally `interactive-browser`; other channels attach through adapters
+- `review.authority`: `automatic`, `proposal-only`, or `risk-based`
+- `review.repository` and `review.pull_request` when GitHub context is useful
+
+The workspace can move without changing its IDs. Internal links and references must remain relative to the workspace root.
+
+## Records
+
+Every record requires a stable, unique `id`. Relationships use IDs rather than array positions, HTML locations, or prose matching.
+
+- Evidence links to source IDs and retains limitations.
+- Hypotheses list supporting and contradicting evidence separately.
+- Decisions preserve owner, rationale, alternatives, and unresolved dissent.
+- Experiments link to the hypothesis and critical assumption they test.
+
+Unknown values remain unknown. Do not generate plausible filler to satisfy a field.
+
+## Comments
+
+Store one comment per JSON file. A hybrid comment combines a stable semantic target with selected-text context:
+
+```json
+{
+  "id": "comment-014",
+  "target": {
+    "record_id": "problem-001",
+    "record_type": "problem-hypothesis",
+    "field": "difficulty"
+  },
+  "selection": {
+    "exact": "Deployment state requires developer interpretation.",
+    "prefix": "When support is responding to a customer,",
+    "suffix": "This delays the response."
+  },
+  "body": "Narrow this to the situation supported by the evidence.",
+  "author": { "github": "corwinm" },
+  "created_at": "2026-07-11T18:42:00Z",
+  "status": "open",
+  "resolution": null
+}
+```
+
+`record_id` and `field` are canonical anchors. The selected text helps reviewers and agents recover the original context after revisions; it is not the identity of the target.
+
+Allowed resolution actions:
+
+- `revised`
+- `accepted-no-change`
+- `needs-clarification`
+- `needs-evidence`
+- `superseded`
+
+## Agent authority
+
+Authority is configurable per workspace:
+
+- `automatic`: the agent may apply review-driven changes, but must record every revision.
+- `proposal-only`: every review-driven change requires human approval.
+- `risk-based`: meaning-preserving corrections may be applied automatically; material discovery changes require a proposal. This is the default.
+
+Under `risk-based`, automatically apply:
+
+- Formatting and presentation corrections
+- Broken links and malformed metadata
+- Wording changes that preserve meaning
+- Citation or source-locator corrections supported by the source
+
+Propose before applying:
+
+- Adding, removing, or reclassifying evidence
+- Changing a problem hypothesis materially
+- Changing a decision or recommendation
+- Changing experiment scope or decision rules
+- Removing dissent, uncertainty, or limitations
+
+Never silently remove evidence, dissent, decisions, comments, or revision history.
+
+## Revision ledger
+
+Every agent revision appends an entry to `history/revisions.json`:
+
+```json
+{
+  "id": "revision-007",
+  "created_at": "2026-07-11T19:10:00Z",
+  "triggered_by": ["comment-014"],
+  "changed_records": ["problem-001"],
+  "summary": "Narrowed the problem boundary to the observed situation."
+}
+```
+
+A comment resolution links to changed records and explains what changed or why no change was made.
+
+## Browser review workflow
+
+1. Create or update canonical records and meeting bundles.
+2. Start the interactive review service, which builds the UI directly from current JSON and source bundles.
+3. Review the prepared guide or ingested evidence in the browser.
+4. Reviewers comment on pages or stable record/field targets in the browser.
+5. Active threads and agent jobs persist in the review database.
+6. A reviewer sends a thread to the configured agent adapter.
+7. The agent replies with an explanation and an optional structured proposal.
+8. Apply meaning-preserving changes under policy or require explicit approval for material changes.
+9. Update canonical records and append the revision ledger; the running review UI reads the new canonical state on its next request.
+10. Resolve and export the thread only after the dynamic browser UI reflects the response.
+11. Commit canonical records, exported resolutions, and revision history. Commit an optional static presentation snapshot only at meaningful sharing or archival milestones.
+
+The low-level static exporter reads JSON and uses only Node.js built-ins. Node.js 24 or newer runs its erasable TypeScript syntax directly without a loader or transpilation step. These commands generate a snapshot or compare an existing snapshot byte-for-byte; they are distinct from `workspace.ts check`:
+
+```bash
+node scripts/render_discovery.ts path/to/workspace
+node scripts/render_discovery.ts path/to/workspace --check
+```
+
+`workspace.ts check` validates canonical workspace data, stable IDs, cross-record links, comment targets, and revision history without requiring a presentation export. `workspace.ts export` generates a deterministic static snapshot under `presentation/`; export validation occurs before replacement, and a failed directory swap restores the previous snapshot. The low-level renderer's `--check` option only verifies static snapshot freshness.

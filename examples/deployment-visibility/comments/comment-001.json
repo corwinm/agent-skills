@@ -1,0 +1,20 @@
+{
+  "id": "comment-001",
+  "target": {
+    "record_id": "problem-001",
+    "record_type": "problem-hypothesis",
+    "field": "difficulty"
+  },
+  "selection": {
+    "exact": "Existing deployment state requires developer interpretation",
+    "prefix": "When support is responding to a customer,",
+    "suffix": "This delays the response."
+  },
+  "body": "This may be too broad. We only observed this when CI and runtime state disagreed.",
+  "author": {
+    "github": "corwinm"
+  },
+  "created_at": "2026-07-11T18:42:00Z",
+  "status": "open",
+  "resolution": null
+}

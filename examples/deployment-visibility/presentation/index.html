@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="generator" content="agent-skills discovery renderer 0.2.0">
+  <title>Overview · Deployment visibility</title>
+  <link rel="stylesheet" href="artifact.css">
+  <script src="artifact.js" defer></script>
+</head>
+<body data-workspace-id="deployment-visibility" data-page="index.html">
+  <!-- Generated from discovery records. Do not edit directly. -->
+  <header class="app-header">
+    <div>
+      <a class="eyebrow" href="index.html">Discovery artifact</a>
+      <h1>Deployment visibility</h1>
+    </div>
+    <div class="header-meta">
+      <span class="status">problem-framing</span>
+      <a class="comment-count" href="review.html">1 open comment</a>
+    </div>
+  </header>
+  <nav aria-label="Artifact views"><a href="index.html" aria-current=page>Overview</a><a href="evidence.html">Evidence</a><a href="hypotheses.html">Hypotheses</a><a href="decisions.html">Decisions</a><a href="experiment.html">Experiment</a><a href="sources.html">Meetings</a><a href="review.html">Review</a></nav>
+  <main><button class="page-comment review-trigger" type="button" data-page-target="index.html" aria-label="Comment on this page"><svg class="icon icon-message-square-plus" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z"/><path d="M12 7v6M9 10h6"/></svg><span>Comment on page</span></button>
+    <section class="decision-banner">
+      <span class="eyebrow">Decision needed</span>
+      <h2>Approve a reversible experiment for release-status questions</h2>
+      <p>Test a plain-language status response before building a dashboard.</p>
+      <a class="decision-action" href="experiment.html">Review proposed experiment →</a>
+    </section>
+    <div class="overview-grid">
+      <section class="panel" data-record-id="request-001">
+        <span class="eyebrow">Original request</span>
+        <blockquote data-record-id="request-001" data-field="verbatim">Build us a dashboard that shows the deployment status of every application.</blockquote>
+        <dl>
+          <div><dt>Requester</dt><dd>Engineering leadership</dd></div>
+          <div><dt>Proposed solution</dt><dd>Central deployment dashboard</dd></div>
+        </dl>
+      </section>
+      <section class="panel">
+        <span class="eyebrow">Current problem frame</span>
+        
+        <article class="hypothesis" data-record-id="problem-001">
+          <span class="record-id">problem-001</span>
+          <h3>Billing and payments support</h3>
+          <div class="field" data-record-id="problem-001" data-field="situation"><span class="field-label">Situation</span><p>Responding to customers waiting for a fix</p></div>
+          <div class="field" data-record-id="problem-001" data-field="difficulty"><span class="field-label">Difficulty</span><p>Existing deployment state requires developer interpretation</p></div>
+          <div class="field" data-record-id="problem-001" data-field="consequence"><span class="field-label">Consequence</span><p>Customer responses are delayed and engineering is interrupted</p></div>
+          <a class="text-link" href="hypotheses.html#problem-001">Inspect hypothesis →</a>
+        </article>
+      </section>
+    </div>
+    <section class="panel key-evidence">
+      <div class="section-heading"><div><span class="eyebrow">Key evidence</span><h2>What currently supports the frame</h2></div><a class="text-link" href="evidence.html">Inspect all evidence →</a></div>
+      <div class="evidence-summary-grid"><article class="evidence-summary" data-record-id="evidence-001">
+          <span class="record-id">evidence-001</span>
+          <p data-record-id="evidence-001" data-field="statement">Support asks engineering whether a customer fix is live before replying.</p>
+          <div><strong>Limitations</strong><ul><li>One participant</li><li>Frequency is not established</li></ul></div>
+        </article><article class="evidence-summary" data-record-id="evidence-002">
+          <span class="record-id">evidence-002</span>
+          <p data-record-id="evidence-002" data-field="statement">A developer checked both CI and runtime deployment state to answer one request.</p>
+          <div><strong>Limitations</strong><ul><li>One observed request</li></ul></div>
+        </article></div>
+    </section>
+    <section class="metrics" aria-label="Artifact contents">
+      <a href="evidence.html"><strong>3</strong><span>Evidence records</span></a>
+      <a href="hypotheses.html"><strong>2</strong><span>Problem hypotheses</span></a>
+      <a href="decisions.html"><strong>1</strong><span>Decisions</span></a>
+      <a href="review.html"><strong>1</strong><span>Open comments</span></a>
+    </section>
+    </main>
+  <dialog id="review-drawer" aria-labelledby="review-title"><form method="dialog" class="drawer-close"><button aria-label="Close comments">×</button></form><h2 id="review-title">Review thread</h2><p id="review-target"></p><form id="review-form"><label for="review-body">Comment</label><textarea id="review-body" name="body" required></textarea><button type="submit">Add comment</button></form><div id="review-threads" aria-live="polite"></div></dialog>
+  <footer>Updated 2026-07-11T18:00:00Z · Workspace deployment-visibility</footer>
+</body>
+</html>

@@ -14,7 +14,15 @@ Each skill lives at `skills/<skill-name>/SKILL.md` and follows the [Agent Skills
 ## Validation
 
 ```bash
-python3 scripts/validate.py
+npm run format
+npm run check
+```
+
+If static discovery export behavior changes, export the example and validate its canonical workspace:
+
+```bash
+npm run export:example
+npm run check:example
 ```
 
 ## Behavioral changes

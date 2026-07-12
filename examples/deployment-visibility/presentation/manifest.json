@@ -1,0 +1,27 @@
+{
+  "generated_at": "2026-07-11T18:00:00Z",
+  "generated_files": [
+    "index.html",
+    "evidence.html",
+    "hypotheses.html",
+    "decisions.html",
+    "experiment.html",
+    "sources.html",
+    "review.html",
+    "artifact.css",
+    "artifact.js",
+    "manifest.json"
+  ],
+  "pages": [
+    "index.html",
+    "evidence.html",
+    "hypotheses.html",
+    "decisions.html",
+    "experiment.html",
+    "sources.html",
+    "review.html"
+  ],
+  "renderer_version": "0.2.0",
+  "source_digest": "sha256:f7612537f55950a9c599ae8d1da8ca0fe370676c27c3c5797467952326896168",
+  "workspace_id": "deployment-visibility"
+}

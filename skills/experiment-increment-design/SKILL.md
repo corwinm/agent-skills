@@ -13,7 +13,6 @@ metadata:
 
 Use [`references/discovery-artifact.md`](references/discovery-artifact.md) when creating or exchanging structured discovery records.
 
-
 Choose the smallest ethical action that produces useful evidence or user value. Do not equate action with building software.
 
 ## Workflow
@@ -52,4 +51,3 @@ A valid increment delivers an observable outcome to a real affected group, can b
 - [ ] Observations use identified data sources
 - [ ] Support, challenge, and inconclusive outcomes are defined
 - [ ] Owner and decision date are assigned
-

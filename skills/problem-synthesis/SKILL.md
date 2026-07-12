@@ -13,7 +13,6 @@ metadata:
 
 Use [`references/discovery-artifact.md`](references/discovery-artifact.md) when creating or exchanging structured discovery records.
 
-
 Develop evidence-backed, falsifiable problem hypotheses. Synthesis reduces complexity; it must not erase provenance, disagreement, edge cases, or uncertainty.
 
 ## Workflow
@@ -48,4 +47,3 @@ Develop evidence-backed, falsifiable problem hypotheses. Synthesis reduces compl
 - [ ] Alternatives remain where evidence is inconclusive
 - [ ] Unknowns and next discriminating questions are stated
 - [ ] The original requested solution was evaluated rather than assumed
-

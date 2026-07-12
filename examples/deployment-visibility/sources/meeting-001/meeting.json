@@ -1,0 +1,69 @@
+{
+  "version": "0.1",
+  "id": "meeting-001",
+  "kind": "discovery-interview",
+  "status": "ingested",
+  "title": "Support deployment-status interview",
+  "decision_needed": "Decide whether a plain-language status experiment is warranted.",
+  "learning_questions": [
+    {
+      "id": "lq-001",
+      "question": "How does support determine whether a customer fix is live?",
+      "related_record_ids": ["problem-001"]
+    },
+    {
+      "id": "lq-002",
+      "question": "When does the existing workflow work without engineering help?",
+      "related_record_ids": ["problem-001"]
+    }
+  ],
+  "participants": [
+    {
+      "participant_id": "participant-001",
+      "pseudonym": "P1",
+      "role": "Support representative",
+      "perspective": "Performs the workflow",
+      "consent": {
+        "discovery_use": "granted",
+        "direct_quote_use": "granted-with-anonymization",
+        "external_sharing": "granted-with-anonymization"
+      }
+    },
+    {
+      "participant_id": "facilitator-001",
+      "pseudonym": "F1",
+      "role": "Facilitator"
+    }
+  ],
+  "consent": {
+    "recording": "granted",
+    "transcription": "granted"
+  },
+  "privacy": {
+    "classification": "internal",
+    "transcript_redacted": true,
+    "identity_map_stored_in_workspace": false
+  },
+  "artifacts": {
+    "guide": "guide.md",
+    "transcript": "transcript.md",
+    "recording": null
+  },
+  "capture": {
+    "method": "video-call transcript",
+    "language": "en",
+    "transcription": "human-reviewed",
+    "known_gaps": []
+  },
+  "ingestion": {
+    "status": "ingested",
+    "ingested_at": "2026-07-11T17:30:00Z",
+    "evidence_ids": ["evidence-003"],
+    "reviewed_by": "facilitator-001",
+    "limitations": ["One participant"]
+  },
+  "adapted_from": {
+    "meeting_ids": [],
+    "record_ids": ["request-001", "problem-001"]
+  }
+}

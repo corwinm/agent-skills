@@ -13,7 +13,6 @@ metadata:
 
 Use [`references/discovery-artifact.md`](references/discovery-artifact.md) when creating or exchanging structured discovery records.
 
-
 Conduct a respectful asynchronous interview that gives a human facilitator a strong starting point. The goal is useful evidence and unanswered questions, not a polished specification.
 
 ## Workflow
@@ -65,4 +64,3 @@ Return:
 - [ ] Requester corrected or accepted the reflective summary
 - [ ] Unknowns remain visible
 - [ ] Human facilitator has actionable next steps
-

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "experiment-001",
+    "problem_hypothesis_id": "problem-001",
+    "critical_assumption": "A plain-language release-status response lets support answer without contacting an application developer.",
+    "intervention": "Provide a manually assisted status lookup for ten requests or four weeks.",
+    "signals": [
+      "Requests answered without an application developer",
+      "Time to answer",
+      "Cases where status is insufficient"
+    ],
+    "decision_rule": "Automate if at least seven of ten requests are answered without developer involvement and no material safety issue appears."
+  }
+]

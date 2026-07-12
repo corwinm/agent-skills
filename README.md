@@ -26,16 +26,17 @@ Compatible agents and marketplaces can discover each directory containing a `SKI
 
 Skills for helping software teams turn requested solutions into traceable, evidence-backed problem decisions.
 
-| Skill | Purpose |
-| --- | --- |
-| `solution-request-triage` | Separate a requested solution from the problem and decide whether discovery is needed. |
-| `adaptive-discovery-intake` | Conduct an asynchronous, adaptive conversation with a requester. |
-| `discovery-plan-design` | Plan interviews, observations, document review, and data collection around uncertainty. |
-| `discovery-evidence-extraction` | Extract traceable evidence from interviews, notes, tickets, and observations. |
-| `problem-synthesis` | Form competing problem hypotheses without erasing contradictions. |
-| `problem-framing-review` | Facilitate stakeholder review, dissent, and readiness decisions. |
-| `experiment-increment-design` | Design the cheapest useful experiment or smallest valuable increment. |
-| `evidence-backed-problem-brief` | Assemble a concise decision brief grounded in cited evidence. |
+| Skill                           | Purpose                                                                                 |
+| ------------------------------- | --------------------------------------------------------------------------------------- |
+| `solution-request-triage`       | Separate a requested solution from the problem and decide whether discovery is needed.  |
+| `adaptive-discovery-intake`     | Conduct an asynchronous, adaptive conversation with a requester.                        |
+| `discovery-plan-design`         | Plan interviews, observations, document review, and data collection around uncertainty. |
+| `discovery-evidence-extraction` | Extract traceable evidence from interviews, notes, tickets, and observations.           |
+| `problem-synthesis`             | Form competing problem hypotheses without erasing contradictions.                       |
+| `problem-framing-review`        | Facilitate stakeholder review, dissent, and readiness decisions.                        |
+| `experiment-increment-design`   | Design the cheapest useful experiment or smallest valuable increment.                   |
+| `evidence-backed-problem-brief` | Assemble a concise decision brief grounded in cited evidence.                           |
+| `discovery-workspace`           | Create, present, review, revise, and verify a portable discovery workspace.             |
 
 These skills support a mixed workflow: an agent can conduct initial asynchronous intake, then assist a human facilitator with research, synthesis, alignment, and experiment design. They do not replace product judgment or claim to discover the “real problem” automatically.
 
@@ -52,6 +53,21 @@ The discovery skills distinguish among:
 
 See [`docs/discovery-artifact.md`](docs/discovery-artifact.md) for the portable artifact schema and [`templates/discovery-artifact.yaml`](templates/discovery-artifact.yaml) for a starting file.
 
+#### Reviewable discovery workspaces
+
+Discovery artifacts can live at the root of their own repository or inside a larger repository. Canonical JSON records remain the source of truth. The review server builds the interactive UI directly from current JSON, while an optional deterministic export produces a static HTML snapshot for sharing or archival.
+
+The workspace also supports a real meeting loop: preserve a foundational request, generate a facilitator guide and consent-aware capture contract under `sources/meeting-<id>/`, ingest a redacted transcript with stable segment locators, review extracted evidence, and adapt the next meeting to unresolved uncertainty.
+
+```bash
+npm run export:example
+npm run review:example
+```
+
+Open <http://127.0.0.1:4173>, then use the pencil beside any reviewable statement or the page-level comment button. Browser threads persist in SQLite, can be sent to a portable CLI agent, and are exported into the workspace when resolved. When `discovery-workspace` is installed independently, its `scripts/workspace.ts` command can initialize, export, check, or launch the complete review application without cloning this repository or installing npm dependencies.
+
+See [`docs/discovery-workspace.md`](docs/discovery-workspace.md) and the committed [`examples/deployment-visibility`](examples/deployment-visibility) workspace.
+
 #### Discovery principles
 
 1. Preserve the original request before reframing it.
@@ -67,7 +83,14 @@ See [`docs/discovery-artifact.md`](docs/discovery-artifact.md) for the portable 
 Validate all skills:
 
 ```bash
-python3 scripts/validate.py
+npm run validate
+```
+
+Run formatting, type-checking, tests, validation, and the generated presentation check:
+
+```bash
+npm run format
+npm run check
 ```
 
 Contributions should include a concrete scenario showing how the change improves agent behavior. See [CONTRIBUTING.md](CONTRIBUTING.md).

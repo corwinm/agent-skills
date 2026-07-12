@@ -1,0 +1,16 @@
+[
+  {
+    "id": "decision-001",
+    "decision": "Run a manually assisted status-response experiment",
+    "owner": "Director of Engineering",
+    "rationale": "The support hypothesis can be tested without committing to dashboard infrastructure.",
+    "alternatives": [
+      "Build the centralized dashboard",
+      "Train support to use existing deployment tools",
+      "Make no change"
+    ],
+    "unresolved_dissent": [
+      "Engineering leadership still wants portfolio reporting investigated separately."
+    ]
+  }
+]
