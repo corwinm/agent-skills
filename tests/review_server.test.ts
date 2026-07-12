@@ -363,10 +363,11 @@ test("generated UI contains stable targets, accessible controls, drawer, statuse
     "#review-drawer { position: fixed; left: 50%; top: 50%; width: min(560px, calc(100vw - 32px)); margin: 0; transform: translate(-50%, -50%)",
     "#review-drawer::backdrop { background: #18181b80",
     ".decision-banner { background: var(--surface); color: var(--ink); border: 1px solid var(--line)",
-    ".review-trigger { display: inline-flex; min-width: 44px; min-height: 44px",
+    ".review-trigger { display: inline-flex; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 9px; background: transparent",
+    ".review-trigger:hover { background: var(--accent-soft); color: var(--ink)",
     "[data-record-id][data-field] { position: relative; min-height: 52px; padding-right: 68px",
     "[data-record-id][data-field] > .review-trigger { position: absolute; right: 12px; top: 50%; transform: translateY(-50%)",
-    ".page-comment { float: right; min-height: 44px",
+    ".page-comment { float: right; min-height: 44px; margin: 0 12px 24px 16px",
   ])
     assert.ok(css.includes(marker), marker);
   assert.ok(!css.includes("#176b55"), "legacy green accent should be removed");
