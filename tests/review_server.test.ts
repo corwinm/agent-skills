@@ -342,6 +342,7 @@ test("generated UI contains stable targets, accessible controls, drawer, statuse
   const html = readFileSync(join(WORKSPACE, "presentation/hypotheses.html"), "utf8");
   const scriptPath = join(WORKSPACE, "presentation/artifact.js");
   const script = readFileSync(scriptPath, "utf8");
+  const css = readFileSync(join(WORKSPACE, "presentation/artifact.css"), "utf8");
   const syntax = spawnSync(process.execPath, ["--check", scriptPath], { encoding: "utf8" });
   assert.equal(syntax.status, 0, syntax.stderr);
   for (const marker of [
@@ -355,6 +356,14 @@ test("generated UI contains stable targets, accessible controls, drawer, statuse
   ])
     assert.ok(html.includes(marker), marker);
   assert.ok(!html.includes("✎"), "pencil glyph should not represent comments");
+  for (const marker of [
+    "--theme-bg: #f5f5f4",
+    "--theme-surface: #ffffff",
+    "--theme-text: #18181b",
+    "#review-drawer { width: min(560px, calc(100vw - 32px)); margin: auto",
+  ])
+    assert.ok(css.includes(marker), marker);
+  assert.ok(!css.includes("#176b55"), "legacy green accent should be removed");
   for (const marker of [
     "icon-message-square-plus",
     "Request agent",
