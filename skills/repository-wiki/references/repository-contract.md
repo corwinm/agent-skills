@@ -98,8 +98,8 @@ Represent each ingested source consistently:
   "sources": {
     "sources/meetings/2026-03-15-steering.md": {
       "identity": {
-        "method": "git-hash-object",
-        "value": "<output of git hash-object -- <path>>"
+        "method": "git-hash-object-no-filters",
+        "value": "<output of git hash-object --no-filters -- <path>>"
       },
       "ingested_at": "<actual RFC 3339 UTC operation timestamp>",
       "affected_pages": ["wiki/actions.md", "wiki/meetings/2026-03-15-steering.md"]
@@ -108,7 +108,7 @@ Represent each ingested source consistently:
 }
 ```
 
-Use repository-relative source paths as object keys and repository-relative wiki paths in `affected_pages`. Compute identities with `git hash-object -- <path>`; this uses Git already required by the workflow and adds no custom dependency. The hash detects identity; it is not an archived copy. Durability comes from preserving the registered source bytes at their cited path and committing source and wiki changes to Git together. Sort source keys and page lists for stable diffs. An ingestion timestamp records the actual operation time, not a claimed source or decision date.
+Use repository-relative source paths as object keys and repository-relative wiki paths in `affected_pages`. Compute identities with `git hash-object --no-filters -- <path>` so `.gitattributes` normalization and clean filters cannot change which bytes are identified; this uses Git already required by the workflow and adds no custom dependency. The hash detects identity; it is not an archived copy. Durability comes from preserving the registered source bytes at their cited path and committing source and wiki changes to Git together. Sort source keys and page lists for stable diffs. An ingestion timestamp records the actual operation time, not a claimed source or decision date.
 
 ## Reporting
 

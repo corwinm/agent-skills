@@ -8,7 +8,7 @@ Integrate new evidence, versioned revisions, moves, or removals into the maintai
 - Resolve each requested path under the configured source root.
 - Reject files outside that root, missing unregistered files, and unsupported binary content the agent cannot inspect.
 - For a directory, enumerate relevant documents while excluding `.git`, generated output, dependencies, secrets, and ignored files.
-- Compute the identity with `git hash-object -- <path>`.
+- Compute the unfiltered byte identity with `git hash-object --no-filters -- <path>`.
 - Compare it with `.wiki/manifest.json` and skip unchanged sources unless the user requests a full re-ingest.
 - If the bytes at a registered path have a different identity, stop before editing the wiki or manifest. Do not replace the prior identity. Ask the user to restore the registered version from Git or another trusted copy and place the revision at a new, version-distinguishing path under the source root.
 - If the registered bytes cannot be recovered, report a provenance gap and the affected pages from the manifest. Do not claim that historical citations remain verifiable.
