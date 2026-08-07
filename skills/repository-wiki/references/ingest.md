@@ -6,10 +6,10 @@ Integrate new evidence, versioned revisions, moves, or removals into the maintai
 
 - Discover the configured layout first and derive its source root, wiki root, index path, and manifest path. Use those derived paths throughout this workflow; do not assume `sources/`, `wiki/`, or `.wiki/manifest.json` is at the repository root.
 - Inspect Git status first. Identify existing changes to the wiki or manifest and preserve unrelated work; do not silently overwrite another contributor's edits.
-- Record the configured manifest path's initial existence state and unfiltered content identity, or an explicit `absent` sentinel when it does not exist.
+- Apply the shared maintained-path safety checks to the configured manifest path, then record its initial existence state and unfiltered content identity, or an explicit `absent` sentinel when it does not exist.
 - Resolve the configured source root and each requested path without reading file contents. Reject a symlinked source root and any source path with a symlink in any path component, even when its target would remain inside the root; committed symlinks preserve the link text, not the bytes that ingestion would otherwise read.
 - After that symlink check, require every canonical source path to remain inside the canonical source root. Reject escaping paths, missing unregistered files, and unsupported binary content the agent cannot inspect.
-- For a directory, enumerate relevant documents without following symlinks while excluding `.git`, generated output, dependencies, secrets, and ignored files. Reject symlink entries rather than traversing or hashing their targets.
+- For a directory, enumerate relevant documents without following symlinks while excluding `.git`, generated output, dependencies, secrets, and ignored files. Reject symlink entries rather than traversing or hashing their targets. Record the exact included repository-relative path set and each entry's file type.
 - Record the initial existence state and, for every present source path participating in the operation, compute the unfiltered byte identity with `git hash-object --no-filters -- <path>`.
 - Compare it with the configured manifest and skip unchanged sources unless the user requests a full re-ingest.
 - If the bytes at a registered path have a different identity, stop before editing the wiki or manifest. Do not replace the prior identity. Ask the user to restore the registered version from Git or another trusted copy and place the revision at a new, version-distinguishing path under the source root.
@@ -52,7 +52,7 @@ List pages to create or update and explain why. For each candidate or prior clai
 
 Use the collision-resistant durable ID rules in `repository-contract.md` for new records. Preserve existing IDs. Before adding a record, search both its cited evidence and normalized statement so concurrent work does not create a duplicate under another ID.
 
-After the plan identifies the exact wiki target set, record every target's existence and unfiltered content identity or an explicit `absent` sentinel. If the plan adds a target later, baseline it before preparing an edit.
+After the plan identifies the exact wiki target set, apply the shared maintained-path safety checks and record every target's existence and unfiltered content identity or an explicit `absent` sentinel. If the plan adds a target later, check and baseline it before preparing an edit.
 
 For a moved or removed registered source, show a semantic reconciliation plan and require explicit approval before changing dependent claims or the manifest. Audit every previously affected page and every current citation. Do not infer that a same-content file move was intentional without approval.
 
@@ -60,12 +60,12 @@ If a missing source still supports any claim, historical record, or citation, re
 
 ## 5. Write, validate, and register
 
-- Immediately before writing each planned wiki target, verify its existence and identity against the target baseline. If it drifted, stop before overwriting it and re-read and reconcile the concurrent change. Apply approved or low-risk wiki-page edits without changing the manifest yet.
+- Immediately before writing each planned wiki target, apply the shared write-path safety checks, then verify its existence and identity against the target baseline. If it is unsafe or drifted, stop before overwriting it and re-read and reconcile the concurrent change. Apply approved or low-risk wiki-page edits without changing the manifest yet.
 - Refresh the configured current-state page only for material current changes.
 - Update the configured wiki index summaries and navigation.
 - Validate changed pages for working links, original-source citations, unique IDs, visible knowledge categories, and index coverage.
 - If validation fails, report the partial wiki edits and leave the prior manifest entries unchanged so a later ingestion cannot mistake the operation for success.
-- Record the validated identity of every edited wiki target. Immediately before any manifest update, verify that the exact target set still has those validated identities and that the configured manifest still matches its initial existence and identity baseline. Also repeat the symlink and canonical-root checks and recheck the existence state and unfiltered identity of every source path participating in the operation. If a wiki target, the manifest, or any source path appeared, disappeared, became a symlink, escaped the source root, or changed identity, stop, report the partial wiki edits, and leave the current manifest unchanged. Re-read and reconcile concurrent wiki or manifest changes, or restart reconciliation from changed source state, rather than overwriting either with stale results.
+- Record the validated identity of every edited wiki target. Immediately before any manifest update, apply the shared write-path safety checks to the configured manifest, verify that the exact target set still has its validated identities, and verify that the manifest still matches its initial existence and identity baseline. For every requested directory, repeat the same non-following enumeration and require its included relative-path set and file types to match the initial snapshot. Also repeat the source symlink and canonical-root checks and recheck the existence state and unfiltered identity of every source path participating in the operation. If a directory membership or type, wiki target, manifest, or source path appeared, disappeared, became a symlink, escaped its configured root, or changed identity, stop, report the partial wiki edits, and leave the current manifest unchanged. Re-read and reconcile concurrent wiki or manifest changes, or restart reconciliation from changed source state, rather than overwriting either with stale results.
 - Only after page validation succeeds, update the manifest using the normative shape in `repository-contract.md`.
 - For a new source or versioned revision, add its manifest entry. Never replace the identity of an existing source key.
 - A full re-ingest may update an existing source's ingestion timestamp and affected pages only when its identity still matches.
