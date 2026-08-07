@@ -1,0 +1,66 @@
+# `/wiki ingest <path...>`
+
+Integrate new, changed, moved, or removed evidence into the maintained wiki. Ingestion is reconciliation, not a standalone summary.
+
+## 1. Select and verify sources
+
+- Inspect Git status first. Identify existing changes to the wiki or manifest and preserve unrelated work; do not silently overwrite another contributor's edits.
+- Resolve each requested path under the configured source root.
+- Reject files outside that root, missing unregistered files, and unsupported binary content the agent cannot inspect.
+- For a directory, enumerate relevant documents while excluding `.git`, generated output, dependencies, secrets, and ignored files.
+- Compute the identity with `git hash-object -- <path>`.
+- Compare it with `.wiki/manifest.json` and skip unchanged sources unless the user requests a full re-ingest.
+- For a missing registered source, search the source root for the same identity before treating it as removed. A matching identity is a proposed move, not proof of intent.
+
+## 2. Read existing context first
+
+Read `wiki/index.md`, relevant canonical pages, prior affected pages from the manifest, and prior citations to the source before proposing changes. Search titles, headings, IDs, and citations before opening unrelated page bodies.
+
+For a changed source, inventory claims previously supported by it. Classify each as retained, revised, contradicted, or no longer supported. Do not leave stale claims active merely because the new version omits them.
+
+## 3. Extract candidate knowledge
+
+Identify only supported:
+
+- cited evidence and current-state changes;
+- interpretations, with their contributing evidence and material alternatives;
+- assumptions, proposals, and open questions without promoting them to facts;
+- explicit decisions and their rationale;
+- confirmed, proposed, rejected, or unresolved requirements;
+- risks, issues, mitigations, and dependencies;
+- explicit actions, owners, due dates, and status;
+- stakeholder roles and expressed concerns;
+- contradictions with existing context.
+
+For a transcript, create or update a concise page under `wiki/meetings/` containing available meeting metadata, summary, decisions, actions, risks, and unresolved questions. Do not treat discussion, suggestion, or silence as approval.
+
+## 4. Plan and reconcile
+
+List pages to create or update and explain why. For each candidate or prior claim:
+
+- merge corroborating evidence into the existing claim;
+- label interpretations, assumptions, and proposals explicitly;
+- preserve both sides of unresolved disagreement;
+- when a later decision explicitly replaces an earlier one, mark the earlier decision `Superseded` and link both entries;
+- when support disappears, preserve historical records that remain historically accurate, but mark current claims withdrawn, stale, or unresolved as the evidence warrants;
+- remove a claim only when it has no continuing historical value, and never remove citations from claims still supported by them;
+- when evidence is insufficient, add an open question rather than guessing.
+
+Use the collision-resistant durable ID rules in `repository-contract.md` for new records. Preserve existing IDs. Before adding a record, search both its cited evidence and normalized statement so concurrent work does not create a duplicate under another ID.
+
+For a moved or removed registered source, show a semantic reconciliation plan and require explicit approval before changing dependent claims or the manifest. Audit every previously affected page and preserve claims supported by other sources. Do not infer that a same-content file move was intentional without approval.
+
+## 5. Write, validate, and register
+
+- Apply the approved or low-risk wiki-page edits without changing the manifest yet.
+- Refresh `wiki/current-state.md` only for material current changes.
+- Update `wiki/index.md` summaries and navigation.
+- Validate changed pages for working links, original-source citations, unique IDs, visible knowledge categories, and index coverage.
+- If validation fails, report the partial wiki edits and leave the prior manifest entries unchanged so a later ingestion cannot mistake the operation for success.
+- Only after page validation succeeds, update the manifest using the normative shape in `repository-contract.md`.
+- For an ingested source, replace its manifest entry.
+- For an approved move, change the manifest key and update source links on affected pages.
+- For an approved removal, delete the manifest entry only after dependent claims have been reconciled.
+- Validate the final manifest and show the resulting diff summary and unresolved conflicts.
+
+Completion condition: every integrated material claim is traceable, prior claims from changed or missing sources are reconciled, unchanged sources were skipped, contradictions remain visible, the manifest reflects the operation, and the index can find every changed canonical page.

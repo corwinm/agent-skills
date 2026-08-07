@@ -78,6 +78,14 @@ See [`docs/discovery-workspace.md`](docs/discovery-workspace.md) and the committ
 6. Let humans review and edit every consequential inference.
 7. Do not turn discovery directly into a backlog without a decision.
 
+### Knowledge management
+
+| Skill             | Purpose                                                                                     |
+| ----------------- | ------------------------------------------------------------------------------------------- |
+| `repository-wiki` | Build and maintain a cited, Git-backed project wiki from documents, notes, and transcripts. |
+
+`repository-wiki` uses one lightweight command family—`init`, `ingest`, `query`, `context`, `check`, and `rebuild`. It stores immutable source material, maintained Markdown context, and a small ingestion manifest directly in the project repository without requiring a database, service, plugin, or custom CLI.
+
 ## Development
 
 Validate all skills:
