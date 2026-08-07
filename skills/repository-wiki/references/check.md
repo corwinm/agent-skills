@@ -7,7 +7,8 @@ Audit structure, traceability, freshness, internal consistency, and collaboratio
 Check for:
 
 - unresolved Git conflict markers in wiki pages or `.wiki/manifest.json`;
-- new or changed sources absent from the manifest;
+- new sources absent from the manifest;
+- registered paths whose bytes no longer match their recorded identity; treat these as immutability violations, not sources to re-ingest in place;
 - manifest entries whose sources moved or no longer exist;
 - the same source entry changed independently across merge stages;
 - material claims without original-source citations;
@@ -36,8 +37,9 @@ With `--fix`:
 3. For the same record under different IDs, preserve the ID present in the merge base. If neither ID is established, propose one ID to retain and update every reference only after approval.
 4. For different records sharing an ID, preserve any merge-base assignment; otherwise propose a new collision-resistant ID for one record and update every reference only after approval.
 5. Never automatically choose between conflicting decisions, interpretations, statuses, owners, due dates, or claims. Preserve both sides in the report and request a human decision.
-6. When both branches changed one manifest source entry, reconcile the wiki pages first, then perform a full `/wiki ingest <source>` for that source and write its manifest entry last.
-7. Apply approved source moves or removals through `/wiki ingest`.
+6. When both branches changed one manifest source entry and all available base, ours, and theirs identities match, reconcile the wiki pages first, then perform a full `/wiki ingest <source>` and write its manifest metadata last. If any identity differs, do not edit the wiki or manifest; follow the identity-mismatch rule instead.
+7. Never repair an identity mismatch by replacing the manifest identity. Restore the registered bytes and add revised content at a new source path; if restoration is impossible, report the provenance gap for human resolution.
+8. Apply approved source moves or removals through `/wiki ingest`.
 
 After repairs, scan the entire wiki for old IDs and conflict markers, validate the manifest, and show the resulting Git diff.
 

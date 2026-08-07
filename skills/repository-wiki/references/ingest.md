@@ -1,6 +1,6 @@
 # `/wiki ingest <path...>`
 
-Integrate new, changed, moved, or removed evidence into the maintained wiki. Ingestion is reconciliation, not a standalone summary.
+Integrate new evidence, versioned revisions, moves, or removals into the maintained wiki. Ingestion is reconciliation, not a standalone summary.
 
 ## 1. Select and verify sources
 
@@ -10,13 +10,15 @@ Integrate new, changed, moved, or removed evidence into the maintained wiki. Ing
 - For a directory, enumerate relevant documents while excluding `.git`, generated output, dependencies, secrets, and ignored files.
 - Compute the identity with `git hash-object -- <path>`.
 - Compare it with `.wiki/manifest.json` and skip unchanged sources unless the user requests a full re-ingest.
+- If the bytes at a registered path have a different identity, stop before editing the wiki or manifest. Do not replace the prior identity. Ask the user to restore the registered version from Git or another trusted copy and place the revision at a new, version-distinguishing path under the source root.
+- If the registered bytes cannot be recovered, report a provenance gap and the affected pages from the manifest. Do not claim that historical citations remain verifiable.
 - For a missing registered source, search the source root for the same identity before treating it as removed. A matching identity is a proposed move, not proof of intent.
 
 ## 2. Read existing context first
 
 Read `wiki/index.md`, relevant canonical pages, prior affected pages from the manifest, and prior citations to the source before proposing changes. Search titles, headings, IDs, and citations before opening unrelated page bodies.
 
-For a changed source, inventory claims previously supported by it. Classify each as retained, revised, contradicted, or no longer supported. Do not leave stale claims active merely because the new version omits them.
+When a new source is an explicit revision of an earlier registered source, read both versions and inventory claims previously supported by the earlier one. Classify each as retained, revised, contradicted, or no longer supported. Keep citations to the version that supports each historical statement; do not leave stale claims active merely because the new version omits them.
 
 ## 3. Extract candidate knowledge
 
@@ -58,9 +60,10 @@ For a moved or removed registered source, show a semantic reconciliation plan an
 - Validate changed pages for working links, original-source citations, unique IDs, visible knowledge categories, and index coverage.
 - If validation fails, report the partial wiki edits and leave the prior manifest entries unchanged so a later ingestion cannot mistake the operation for success.
 - Only after page validation succeeds, update the manifest using the normative shape in `repository-contract.md`.
-- For an ingested source, replace its manifest entry.
+- For a new source or versioned revision, add its manifest entry. Never replace the identity of an existing source key.
+- A full re-ingest may update an existing source's ingestion timestamp and affected pages only when its identity still matches.
 - For an approved move, change the manifest key and update source links on affected pages.
 - For an approved removal, delete the manifest entry only after dependent claims have been reconciled.
 - Validate the final manifest and show the resulting diff summary and unresolved conflicts.
 
-Completion condition: every integrated material claim is traceable, prior claims from changed or missing sources are reconciled, unchanged sources were skipped, contradictions remain visible, the manifest reflects the operation, and the index can find every changed canonical page.
+Completion condition: every integrated material claim is traceable to the immutable source version that supports it, prior claims from revised or missing sources are reconciled, unchanged sources were skipped, in-place source changes were rejected, contradictions remain visible, the manifest reflects the operation, and the index can find every changed canonical page.
