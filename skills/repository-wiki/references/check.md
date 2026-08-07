@@ -9,7 +9,7 @@ Check for:
 - unresolved Git conflict markers in wiki pages or `.wiki/manifest.json`;
 - new sources absent from the manifest;
 - registered paths whose bytes no longer match their recorded identity; treat these as immutability violations, not sources to re-ingest in place;
-- manifest entries whose sources moved or no longer exist;
+- manifest entries whose sources moved or no longer exist, distinguishing recoverable moves from unresolved tombstones;
 - the same source entry changed independently across merge stages;
 - material claims without original-source citations;
 - broken Markdown links, resolving each destination from the containing page;
@@ -39,7 +39,8 @@ With `--fix`:
 5. Never automatically choose between conflicting decisions, interpretations, statuses, owners, due dates, or claims. Preserve both sides in the report and request a human decision.
 6. When both branches changed one manifest source entry and all available base, ours, and theirs identities match, reconcile the wiki pages first, then perform a full `/wiki ingest <source>` and write its manifest metadata last. If any identity differs, do not edit the wiki or manifest; follow the identity-mismatch rule instead.
 7. Never repair an identity mismatch by replacing the manifest identity. Restore the registered bytes and add revised content at a new source path; if restoration is impossible, report the provenance gap for human resolution.
-8. Apply approved source moves or removals through `/wiki ingest`.
+8. For a missing source still supporting a wiki claim, historical record, or citation, require the user to place a trusted byte-identical copy under the source root and handle it as a move. If recovery is impossible, retain the manifest entry and affected pages as an unresolved tombstone and report every broken citation.
+9. Apply approved source moves or removals through `/wiki ingest`; remove a registration only when no wiki claim, historical record, or citation depends on it.
 
 After repairs, scan the entire wiki for old IDs and conflict markers, validate the manifest, and show the resulting Git diff.
 

@@ -50,7 +50,9 @@ List pages to create or update and explain why. For each candidate or prior clai
 
 Use the collision-resistant durable ID rules in `repository-contract.md` for new records. Preserve existing IDs. Before adding a record, search both its cited evidence and normalized statement so concurrent work does not create a duplicate under another ID.
 
-For a moved or removed registered source, show a semantic reconciliation plan and require explicit approval before changing dependent claims or the manifest. Audit every previously affected page and preserve claims supported by other sources. Do not infer that a same-content file move was intentional without approval.
+For a moved or removed registered source, show a semantic reconciliation plan and require explicit approval before changing dependent claims or the manifest. Audit every previously affected page and every current citation. Do not infer that a same-content file move was intentional without approval.
+
+If a missing source still supports any claim, historical record, or citation, require the user to place a trusted copy whose unfiltered byte identity matches the manifest under a versioned or archive path within the source root; handle that preservation as a move and update links. If the bytes cannot be recovered, keep the manifest entry and affected-page mapping unchanged as an unresolved tombstone, identify every broken citation, and report a provenance gap. Do not imply that the manifest hash makes the evidence retrievable.
 
 ## 5. Write, validate, and register
 
@@ -63,7 +65,7 @@ For a moved or removed registered source, show a semantic reconciliation plan an
 - For a new source or versioned revision, add its manifest entry. Never replace the identity of an existing source key.
 - A full re-ingest may update an existing source's ingestion timestamp and affected pages only when its identity still matches.
 - For an approved move, change the manifest key and update source links on affected pages.
-- For an approved removal, delete the manifest entry only after dependent claims have been reconciled.
+- For an approved removal, delete the manifest entry only when no wiki claim, historical record, or citation depends on that source. Otherwise require a user-provided byte-identical archived copy and handle it as an approved move, or retain the missing entry as an unresolved tombstone.
 - Validate the final manifest and show the resulting diff summary and unresolved conflicts.
 
 Completion condition: every integrated material claim is traceable to the immutable source version that supports it, prior claims from revised or missing sources are reconciled, unchanged sources were skipped, in-place source changes were rejected, contradictions remain visible, the manifest reflects the operation, and the index can find every changed canonical page.
