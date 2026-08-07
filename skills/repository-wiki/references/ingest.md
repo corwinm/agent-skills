@@ -8,7 +8,7 @@ Integrate new evidence, versioned revisions, moves, or removals into the maintai
 - Resolve the configured source root and each requested path without reading file contents. Reject a symlinked source root and any source path with a symlink in any path component, even when its target would remain inside the root; committed symlinks preserve the link text, not the bytes that ingestion would otherwise read.
 - After that symlink check, require every canonical source path to remain inside the canonical source root. Reject escaping paths, missing unregistered files, and unsupported binary content the agent cannot inspect.
 - For a directory, enumerate relevant documents without following symlinks while excluding `.git`, generated output, dependencies, secrets, and ignored files. Reject symlink entries rather than traversing or hashing their targets.
-- Compute the unfiltered byte identity with `git hash-object --no-filters -- <path>`.
+- Record the initial existence state and, for every present source path participating in the operation, compute the unfiltered byte identity with `git hash-object --no-filters -- <path>`.
 - Compare it with `.wiki/manifest.json` and skip unchanged sources unless the user requests a full re-ingest.
 - If the bytes at a registered path have a different identity, stop before editing the wiki or manifest. Do not replace the prior identity. Ask the user to restore the registered version from Git or another trusted copy and place the revision at a new, version-distinguishing path under the source root.
 - If the registered bytes cannot be recovered, report a provenance gap and the affected pages from the manifest. Do not claim that historical citations remain verifiable.
@@ -61,6 +61,7 @@ If a missing source still supports any claim, historical record, or citation, re
 - Update `wiki/index.md` summaries and navigation.
 - Validate changed pages for working links, original-source citations, unique IDs, visible knowledge categories, and index coverage.
 - If validation fails, report the partial wiki edits and leave the prior manifest entries unchanged so a later ingestion cannot mistake the operation for success.
+- Immediately before any manifest update, repeat the symlink and canonical-root checks and recheck the existence state and unfiltered identity of every source path participating in the operation. If any path appeared, disappeared, became a symlink, escaped the source root, or changed identity, stop, report the partial wiki edits, and leave the prior manifest unchanged. Restart reconciliation from the changed source state rather than registering claims prepared from stale bytes.
 - Only after page validation succeeds, update the manifest using the normative shape in `repository-contract.md`.
 - For a new source or versioned revision, add its manifest entry. Never replace the identity of an existing source key.
 - A full re-ingest may update an existing source's ingestion timestamp and affected pages only when its identity still matches.
@@ -68,4 +69,4 @@ If a missing source still supports any claim, historical record, or citation, re
 - For an approved removal, delete the manifest entry only when no wiki claim, historical record, or citation depends on that source. Otherwise require a user-provided byte-identical archived copy and handle it as an approved move, or retain the missing entry as an unresolved tombstone.
 - Validate the final manifest and show the resulting diff summary and unresolved conflicts.
 
-Completion condition: every integrated material claim is traceable to the immutable regular-file source version that supports it, no source symlink was followed, prior claims from revised or missing sources are reconciled, unchanged sources were skipped, in-place source changes were rejected, contradictions remain visible, the manifest reflects the operation, and the index can find every changed canonical page.
+Completion condition: every integrated material claim is traceable to the immutable regular-file source version that supports it, no source symlink was followed, every processed source still matches its reconciled existence and identity state at finalization, prior claims from revised or missing sources are reconciled, unchanged sources were skipped, in-place source changes were rejected, contradictions remain visible, the manifest reflects the operation, and the index can find every changed canonical page.
