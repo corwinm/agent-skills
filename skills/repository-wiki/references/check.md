@@ -33,15 +33,16 @@ Without `--fix`, report findings only.
 
 With `--fix`:
 
-1. Automatically repair only unambiguous mechanical issues such as index entries, link syntax, metadata normalization, sorting, manifest formatting, and reference updates after an approved ID choice.
-2. Classify apparent duplicate records by comparing original-source citations and meaning, not ID equality alone.
-3. For the same record under different IDs, preserve the ID present in the merge base. If neither ID is established, propose one ID to retain and update every reference only after approval.
-4. For different records sharing an ID, preserve any merge-base assignment; otherwise propose a new collision-resistant ID for one record and update every reference only after approval.
-5. Never automatically choose between conflicting decisions, interpretations, statuses, owners, due dates, or claims. Preserve both sides in the report and request a human decision.
-6. When both branches changed one manifest source entry and all available base, ours, and theirs identities match, reconcile the wiki pages first, then perform a full `/wiki ingest <source>` and write its manifest metadata last. If any identity differs, do not edit the wiki or manifest; follow the identity-mismatch rule instead.
-7. Never repair an identity mismatch by replacing the manifest identity. Restore the registered bytes and add revised content at a new source path; if restoration is impossible, report the provenance gap for human resolution.
-8. For a missing source still supporting a wiki claim, historical record, or citation, require the user to place a trusted byte-identical copy under the source root and handle it as a move. If recovery is impossible, retain the manifest entry and affected pages as an unresolved tombstone and report every broken citation.
-9. Apply approved source moves or removals through `/wiki ingest`; remove a registration only when no wiki claim, historical record, or citation depends on it.
+1. After identifying the exact repair target set, apply the shared maintained-path safety checks and record each target's existence and unfiltered identity or an explicit `absent` sentinel. If a later repair adds a target, check and baseline it before preparing the edit. Immediately before every repair write, repeat the safety check and verify that target against its baseline; if it drifted, stop before overwriting it and re-audit and reconcile the concurrent change.
+2. Automatically repair only unambiguous mechanical issues such as index entries, link syntax, metadata normalization, sorting, manifest formatting, and reference updates after an approved ID choice.
+3. Classify apparent duplicate records by comparing original-source citations and meaning, not ID equality alone.
+4. For the same record under different IDs, preserve the ID present in the merge base. If neither ID is established, propose one ID to retain and update every reference only after approval.
+5. For different records sharing an ID, preserve any merge-base assignment; otherwise propose a new collision-resistant ID for one record and update every reference only after approval.
+6. Never automatically choose between conflicting decisions, interpretations, statuses, owners, due dates, or claims. Preserve both sides in the report and request a human decision.
+7. When both branches changed one manifest source entry and all available base, ours, and theirs identities match, reconcile the wiki pages first, then perform a full `/wiki ingest <source>` and write its manifest metadata last. If any identity differs, do not edit the wiki or manifest; follow the identity-mismatch rule instead.
+8. Never repair an identity mismatch by replacing the manifest identity. Restore the registered bytes and add revised content at a new source path; if restoration is impossible, report the provenance gap for human resolution.
+9. For a missing source still supporting a wiki claim, historical record, or citation, require the user to place a trusted byte-identical copy under the source root and handle it as a move. If recovery is impossible, retain the manifest entry and affected pages as an unresolved tombstone and report every broken citation.
+10. Apply approved source moves or removals through `/wiki ingest`; remove a registration only when no wiki claim, historical record, or citation depends on it.
 
 After repairs, scan the entire wiki for old IDs and conflict markers, validate the manifest, and show the resulting Git diff.
 

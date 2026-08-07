@@ -18,7 +18,9 @@ Use this shape when applicable:
 
 ## Current state
 
-## Evidence and interpretations
+## Evidence
+
+## Interpretations
 
 ## Confirmed decisions
 
