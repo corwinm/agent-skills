@@ -5,9 +5,9 @@ Integrate new evidence, versioned revisions, moves, or removals into the maintai
 ## 1. Select and verify sources
 
 - Inspect Git status first. Identify existing changes to the wiki or manifest and preserve unrelated work; do not silently overwrite another contributor's edits.
-- Resolve each requested path under the configured source root.
-- Reject files outside that root, missing unregistered files, and unsupported binary content the agent cannot inspect.
-- For a directory, enumerate relevant documents while excluding `.git`, generated output, dependencies, secrets, and ignored files.
+- Resolve the configured source root and each requested path without reading file contents. Reject a symlinked source root and any source path with a symlink in any path component, even when its target would remain inside the root; committed symlinks preserve the link text, not the bytes that ingestion would otherwise read.
+- After that symlink check, require every canonical source path to remain inside the canonical source root. Reject escaping paths, missing unregistered files, and unsupported binary content the agent cannot inspect.
+- For a directory, enumerate relevant documents without following symlinks while excluding `.git`, generated output, dependencies, secrets, and ignored files. Reject symlink entries rather than traversing or hashing their targets.
 - Compute the unfiltered byte identity with `git hash-object --no-filters -- <path>`.
 - Compare it with `.wiki/manifest.json` and skip unchanged sources unless the user requests a full re-ingest.
 - If the bytes at a registered path have a different identity, stop before editing the wiki or manifest. Do not replace the prior identity. Ask the user to restore the registered version from Git or another trusted copy and place the revision at a new, version-distinguishing path under the source root.
@@ -68,4 +68,4 @@ If a missing source still supports any claim, historical record, or citation, re
 - For an approved removal, delete the manifest entry only when no wiki claim, historical record, or citation depends on that source. Otherwise require a user-provided byte-identical archived copy and handle it as an approved move, or retain the missing entry as an unresolved tombstone.
 - Validate the final manifest and show the resulting diff summary and unresolved conflicts.
 
-Completion condition: every integrated material claim is traceable to the immutable source version that supports it, prior claims from revised or missing sources are reconciled, unchanged sources were skipped, in-place source changes were rejected, contradictions remain visible, the manifest reflects the operation, and the index can find every changed canonical page.
+Completion condition: every integrated material claim is traceable to the immutable regular-file source version that supports it, no source symlink was followed, prior claims from revised or missing sources are reconciled, unchanged sources were skipped, in-place source changes were rejected, contradictions remain visible, the manifest reflects the operation, and the index can find every changed canonical page.

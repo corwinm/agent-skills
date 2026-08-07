@@ -8,6 +8,7 @@ Check for:
 
 - unresolved Git conflict markers in wiki pages or `.wiki/manifest.json`;
 - new sources absent from the manifest;
+- a symlinked source root or registered source path with a symlink in any component; do not follow it while auditing, even if its target appears to remain inside the source root;
 - registered paths whose bytes no longer match their recorded identity; treat these as immutability violations, not sources to re-ingest in place;
 - manifest entries whose sources moved or no longer exist, distinguishing recoverable moves from unresolved tombstones;
 - the same source entry changed independently across merge stages;
