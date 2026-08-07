@@ -5,6 +5,7 @@ Integrate new evidence, versioned revisions, moves, or removals into the maintai
 ## 1. Select and verify sources
 
 - Inspect Git status first. Identify existing changes to the wiki or manifest and preserve unrelated work; do not silently overwrite another contributor's edits.
+- Record the manifest's initial existence state and unfiltered content identity, or an explicit `absent` sentinel when it does not exist.
 - Resolve the configured source root and each requested path without reading file contents. Reject a symlinked source root and any source path with a symlink in any path component, even when its target would remain inside the root; committed symlinks preserve the link text, not the bytes that ingestion would otherwise read.
 - After that symlink check, require every canonical source path to remain inside the canonical source root. Reject escaping paths, missing unregistered files, and unsupported binary content the agent cannot inspect.
 - For a directory, enumerate relevant documents without following symlinks while excluding `.git`, generated output, dependencies, secrets, and ignored files. Reject symlink entries rather than traversing or hashing their targets.
@@ -61,7 +62,7 @@ If a missing source still supports any claim, historical record, or citation, re
 - Update `wiki/index.md` summaries and navigation.
 - Validate changed pages for working links, original-source citations, unique IDs, visible knowledge categories, and index coverage.
 - If validation fails, report the partial wiki edits and leave the prior manifest entries unchanged so a later ingestion cannot mistake the operation for success.
-- Immediately before any manifest update, repeat the symlink and canonical-root checks and recheck the existence state and unfiltered identity of every source path participating in the operation. If any path appeared, disappeared, became a symlink, escaped the source root, or changed identity, stop, report the partial wiki edits, and leave the prior manifest unchanged. Restart reconciliation from the changed source state rather than registering claims prepared from stale bytes.
+- Immediately before any manifest update, verify that the manifest still matches its initial existence and identity baseline. Also repeat the symlink and canonical-root checks and recheck the existence state and unfiltered identity of every source path participating in the operation. If the manifest or any source path appeared, disappeared, became a symlink, escaped the source root, or changed identity, stop, report the partial wiki edits, and leave the current manifest unchanged. Re-read and reconcile concurrent manifest changes, or restart reconciliation from changed source state, rather than overwriting either with stale results.
 - Only after page validation succeeds, update the manifest using the normative shape in `repository-contract.md`.
 - For a new source or versioned revision, add its manifest entry. Never replace the identity of an existing source key.
 - A full re-ingest may update an existing source's ingestion timestamp and affected pages only when its identity still matches.

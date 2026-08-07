@@ -46,9 +46,10 @@ Do not remove a source registration while any wiki claim, historical record, or 
 9. Keep `current-state.md` concise. Move history and detail into the appropriate canonical page.
 10. Store repository-relative paths in the manifest and reports. In Markdown, calculate each link destination relative to the file containing the link.
 11. Show a change plan before touching more than five wiki files, resolving a material contradiction, or making a destructive change.
-12. Recheck every processed source path's existence, symlink safety, canonical containment, and unfiltered identity immediately before a manifest write. Leave the prior manifest unchanged if source state drifted during the operation.
-13. Use Git diffs for review. Do not commit, push, or discard user changes unless explicitly requested.
-14. Do not read secrets, credentials, ignored files, or unrelated repository content merely because it is accessible.
+12. Before presenting a claim as source-supported, verify that every cited registered source is safe to read, exists, and matches its manifest identity. Report a provenance gap instead of relying on a stale wiki claim when verification fails.
+13. Baseline the manifest before a write operation. Immediately before writing it, verify that baseline and recheck every processed source path's existence, symlink safety, canonical containment, and unfiltered identity. Leave the current manifest unchanged if it or a source drifted during the operation.
+14. Use Git diffs for review. Do not commit, push, or discard user changes unless explicitly requested.
+15. Do not read secrets, credentials, ignored files, or unrelated repository content merely because it is accessible.
 
 ## Source locators
 
