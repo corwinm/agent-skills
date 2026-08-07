@@ -22,7 +22,7 @@ wiki/
 └── manifest.json           Source identities and pages affected by ingestion
 ```
 
-The repository may place this structure under a configured subdirectory. Discover and preserve an existing layout before creating another one. Record material layout deviations in `wiki/index.md`.
+The repository may place this structure under a configured subdirectory. Discover and preserve an existing layout before creating another one. Treat paths in this contract and the command references as logical paths relative to that discovered layout, derive the source root, wiki root, index, and manifest paths once, and use those configured paths consistently. Never create or update a repository-root path merely because an example below uses one. Record material layout deviations in the configured wiki index.
 
 Only ingest files under the configured source root. If evidence is outside it, ask the user to place an immutable copy under the source root; do not create a nonportable external citation. Once a path is registered in the manifest, never replace its bytes in place. Store a revision at a new, version-distinguishing source path so citations to the earlier version remain retrievable.
 
