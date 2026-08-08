@@ -127,7 +127,7 @@ Represent each ingested source consistently:
         "participants": {
           "P1": {
             "discovery_use": "granted",
-            "direct_quote_use": "denied",
+            "direct_quote_use": "not-granted",
             "external_sharing": "unknown"
           }
         }
