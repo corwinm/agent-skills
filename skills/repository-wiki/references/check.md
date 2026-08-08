@@ -4,6 +4,8 @@ Audit structure, traceability, freshness, internal consistency, and collaboratio
 
 ## Audit
 
+Before reading any wiki or manifest path that may inform a finding or repair, apply the shared maintained-path safety checks and record its unfiltered identity. Conduct the audit from exactly those baselined bytes. If the audit discovers another prospective repair target, baseline it before reading it; if content was already read without a baseline, baseline and reread it and recompute the affected finding before proposing a repair.
+
 Check for:
 
 - unresolved Git conflict markers in wiki pages or `.wiki/manifest.json`;
@@ -18,9 +20,11 @@ Check for:
 - transcript-derived evidence or quotations whose speaker cannot be mapped to a declared participant or whose participant-specific discovery-use or direct-quotation consent is denied, withdrawn, or `unknown` for that use;
 - evidence records that omit available corroboration or limitations, or silently drop unavailable source ID, locator, affected group, collection date, corroboration, or limitations instead of recording `Unknown`;
 - requests whose original wording or available source, requester, date, urgency, stated rationale, or requested solution was lost or overwritten by reframing;
+- interpretations without an explicit author or without their contributing evidence and material alternatives;
 - unlabeled interpretations, assumptions, or proposals presented as confirmed;
 - assumptions without an explicit owner, consequence if wrong, risk, and proposed validation, using `Unknown` where those fields are unavailable;
 - problem hypotheses that are not falsifiable or do not list supporting evidence, contradicting evidence, and unknowns separately;
+- decisions without explicit chosen action, alternatives considered, rationale, evidence used, unresolved dissent, owner, and date, using `Unknown` where those fields are unavailable;
 - duplicate or conflicting active decisions and requirements;
 - stale `current-state.md` claims contradicted by newer evidence;
 - answered questions still marked open;
@@ -38,7 +42,7 @@ Without `--fix`, report findings only.
 
 With `--fix`:
 
-1. After identifying the exact repair target set, apply the shared maintained-path safety checks and record each target's existence and unfiltered identity or an explicit `absent` sentinel. If a later repair adds a target, check and baseline it before preparing the edit. Immediately before every repair write, repeat the safety check and verify that target against its baseline; if it drifted, stop before overwriting it and re-audit and reconcile the concurrent change.
+1. Verify that every exact repair target was baselined before the audit read that informed its repair. If not, baseline and reread it and recompute the repair. Record an explicit `absent` sentinel for a new target before preparing its edit. Immediately before every repair write, repeat the safety check and verify that target against its baseline; if it drifted, stop before overwriting it and re-audit and reconcile the concurrent change.
 2. Automatically repair only unambiguous mechanical issues such as index entries, link syntax, metadata normalization, sorting, manifest formatting, and reference updates after an approved ID choice.
 3. Classify apparent duplicate records by comparing original-source citations and meaning, not ID equality alone.
 4. For the same record under different IDs, preserve the ID present in the merge base. If neither ID is established, propose one ID to retain and update every reference only after approval.
