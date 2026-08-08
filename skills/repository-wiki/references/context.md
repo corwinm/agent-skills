@@ -3,7 +3,7 @@
 Create a focused context pack for a downstream task. This command is read-only unless `--save` is present.
 
 1. Translate the purpose into information needs.
-2. Use the index to select relevant current state, evidence, interpretations, assumptions, problem hypotheses, proposals, decisions, requirements, risks, stakeholders, actions, and questions.
+2. Use the index to select relevant current state, requests, evidence, interpretations, assumptions, problem hypotheses, proposals, decisions, requirements, risks, stakeholders, actions, and questions.
 3. Verify every registered source used by the pack against its manifest identity using the shared path-safety rules, then recheck cited sources immediately before returning or saving the pack. Report provenance gaps and do not present stale wiki claims as source-supported.
 4. Prefer concise summaries and short source excerpts over complete documents.
 5. Respect the requested approximate token budget; default to 8,000 tokens.
@@ -17,6 +17,8 @@ Use this shape when applicable:
 # Context: <purpose>
 
 ## Current state
+
+## Requests
 
 ## Evidence
 

@@ -18,7 +18,7 @@ Integrate new evidence, versioned revisions, moves, or removals into the maintai
 
 ## 2. Read existing context first
 
-Read the configured wiki index, relevant canonical pages, prior affected pages from the manifest, and prior citations to the source before proposing changes. Search titles, headings, IDs, and citations before opening unrelated page bodies.
+Before reading any maintained page that may inform an edit, apply the shared path-safety checks and record its existence and unfiltered identity or an explicit `absent` sentinel. Then read the configured wiki index, relevant canonical pages, prior affected pages from the manifest, and prior citations to the source from exactly those baselined bytes before proposing changes. Search titles, headings, IDs, and citations before opening unrelated page bodies. If another target becomes relevant later, baseline it before reading it.
 
 When a new source is an explicit revision of an earlier registered source, read both versions and inventory claims previously supported by the earlier one. Classify each as retained, revised, contradicted, or no longer supported. Keep citations to the version that supports each historical statement; do not leave stale claims active merely because the new version omits them.
 
@@ -26,6 +26,7 @@ When a new source is an explicit revision of an earlier registered source, read 
 
 Identify only supported:
 
+- requests and requested solutions, preserving the requester's original wording, source, requester, date, urgency, and stated rationale when available before any reframing;
 - cited evidence and current-state changes;
 - verbatim, visibly marked direct quotations when exact wording matters, and clearly non-quoted paraphrases otherwise; never silently rewrite a quote;
 - interpretations, with their contributing evidence and material alternatives;
@@ -54,7 +55,7 @@ List pages to create or update and explain why. For each candidate or prior clai
 
 Use the collision-resistant durable ID rules in `repository-contract.md` for new records. Preserve existing IDs. Before adding a record, search both its cited evidence and normalized statement so concurrent work does not create a duplicate under another ID.
 
-After the plan identifies the exact wiki target set, apply the shared maintained-path safety checks and record every target's existence and unfiltered content identity or an explicit `absent` sentinel. If the plan adds a target later, check and baseline it before preparing an edit.
+After the plan identifies the exact wiki target set, verify that every target was baselined before the read that informed its proposed edit. For any target that was not, apply the shared maintained-path safety checks, baseline and reread it, then redo the affected reconciliation before staging. If the plan adds a target later, follow the same baseline-before-read rule.
 
 For a moved or removed registered source, show a semantic reconciliation plan and require explicit approval before changing dependent claims or the manifest. Audit every previously affected page and every current citation. Do not infer that a same-content file move was intentional without approval.
 

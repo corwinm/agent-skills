@@ -15,6 +15,7 @@ Check for:
 - material claims without original-source citations;
 - broken Markdown links, resolving each destination from the containing page;
 - missing or invalid source locators;
+- requests whose original wording or available source, requester, date, urgency, stated rationale, or requested solution was lost or overwritten by reframing;
 - unlabeled interpretations, assumptions, or proposals presented as confirmed;
 - problem hypotheses that are not falsifiable or do not list supporting evidence, contradicting evidence, and unknowns separately;
 - duplicate or conflicting active decisions and requirements;

@@ -11,6 +11,7 @@ sources/                    Human-owned source material; never edit during wiki 
 wiki/
 ├── index.md                Catalog, summaries, and navigation
 ├── current-state.md        Concise current understanding of the project
+├── requests.md             Original requests and requested solutions before reframing
 ├── problem-hypotheses.md   Falsifiable problem frames with supporting and contradicting evidence
 ├── decisions.md            Decisions, rationale, status, and supersession history
 ├── requirements.md         Confirmed, proposed, rejected, and unresolved requirements
@@ -39,6 +40,7 @@ Do not remove a source registration while any wiki claim, historical record, or 
 6. Cite every material factual claim, decision, requirement, risk, commitment, or stakeholder concern.
 7. Never fabricate a citation, locator, date, participant, owner, status, confidence, or consensus.
 8. Keep these categories visibly distinct:
+   - **Request:** the requester's original wording and proposed solution, with source, requester, date, urgency, and stated rationale when available. Reframing never overwrites the original request.
    - **Evidence:** what a cited source states or shows; evidence is not automatically truth.
    - **Interpretation:** an inference from cited evidence; identify plausible alternatives when material.
    - **Assumption:** an unverified belief; state what would validate it when relevant.
