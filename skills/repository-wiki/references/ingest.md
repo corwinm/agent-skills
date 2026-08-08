@@ -15,6 +15,7 @@ Integrate new evidence, versioned revisions, moves, or removals into the maintai
 - If the bytes at a registered path have a different identity, stop before editing the wiki or manifest. Do not replace the prior identity. Ask the user to restore the registered version from Git or another trusted copy and place the revision at a new, version-distinguishing path under the source root.
 - If the registered bytes cannot be recovered, report a provenance gap and the affected pages from the manifest. Do not claim that historical citations remain verifiable.
 - For a missing registered source, search the source root for the same identity before treating it as removed. A matching identity is a proposed move, not proof of intent.
+- When a transcript belongs to a discovery-workspace meeting bundle, locate and validate its configured `meeting.json` before processing transcript content and include that manifest as a participating source even when only the transcript was requested. Map every transcript speaker to a declared participant and fail closed on missing, malformed, or ambiguous mappings. Treat `unknown` as not granted: extract no statement from a participant without granted discovery-use consent, and preserve verbatim words only when that participant separately granted direct-quotation consent. Discovery-use consent without quotation consent permits a clearly non-quoted paraphrase, not a quote. Preserve redaction, uncertainty, inaudible, and overlap markers; never let one participant's consent authorize another's material.
 
 ## 2. Read existing context first
 
@@ -27,10 +28,10 @@ When a new source is an explicit revision of an earlier registered source, read 
 Identify only supported:
 
 - requests and requested solutions, preserving the requester's original wording, source, requester, date, urgency, and stated rationale when available before any reframing;
-- cited evidence and current-state changes;
+- cited evidence and current-state changes, retaining source ID, excerpt or locator, affected group, collection date, corroboration, and limitations when available and using explicit `Unknown` values rather than dropping unavailable evidence fields;
 - verbatim, visibly marked direct quotations when exact wording matters, and clearly non-quoted paraphrases otherwise; never silently rewrite a quote;
 - interpretations, with their contributing evidence and material alternatives;
-- assumptions, proposals, and open questions without promoting them to facts;
+- assumptions with owner, consequence if wrong, risk, and proposed validation recorded explicitly, using `Unknown` where unavailable; proposals and open questions remain separate and are not promoted to facts;
 - falsifiable problem hypotheses with affected group, situation or trigger, goal, difficulty, consequence, supporting evidence, contradicting evidence, unknowns, and a worded confidence rationale kept distinct;
 - explicit decisions and their rationale;
 - confirmed, proposed, rejected, or unresolved requirements;

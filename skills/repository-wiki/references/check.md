@@ -15,8 +15,11 @@ Check for:
 - material claims without original-source citations;
 - broken Markdown links, resolving each destination from the containing page;
 - missing or invalid source locators;
+- transcript-derived evidence or quotations whose speaker cannot be mapped to a declared participant or whose participant-specific discovery-use or direct-quotation consent is denied, withdrawn, or `unknown` for that use;
+- evidence records that omit available corroboration or limitations, or silently drop unavailable source ID, locator, affected group, collection date, corroboration, or limitations instead of recording `Unknown`;
 - requests whose original wording or available source, requester, date, urgency, stated rationale, or requested solution was lost or overwritten by reframing;
 - unlabeled interpretations, assumptions, or proposals presented as confirmed;
+- assumptions without an explicit owner, consequence if wrong, risk, and proposed validation, using `Unknown` where those fields are unavailable;
 - problem hypotheses that are not falsifiable or do not list supporting evidence, contradicting evidence, and unknowns separately;
 - duplicate or conflicting active decisions and requirements;
 - stale `current-state.md` claims contradicted by newer evidence;
