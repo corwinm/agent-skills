@@ -27,6 +27,7 @@ When a new source is an explicit revision of an earlier registered source, read 
 Identify only supported:
 
 - cited evidence and current-state changes;
+- verbatim, visibly marked direct quotations when exact wording matters, and clearly non-quoted paraphrases otherwise; never silently rewrite a quote;
 - interpretations, with their contributing evidence and material alternatives;
 - assumptions, proposals, and open questions without promoting them to facts;
 - falsifiable problem hypotheses with affected group, situation or trigger, goal, difficulty, consequence, supporting evidence, contradicting evidence, unknowns, and a worded confidence rationale kept distinct;
