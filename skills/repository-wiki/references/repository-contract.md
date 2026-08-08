@@ -11,6 +11,7 @@ sources/                    Human-owned source material; never edit during wiki 
 wiki/
 ├── index.md                Catalog, summaries, and navigation
 ├── current-state.md        Concise current understanding of the project
+├── problem-hypotheses.md   Falsifiable problem frames with supporting and contradicting evidence
 ├── decisions.md            Decisions, rationale, status, and supersession history
 ├── requirements.md         Confirmed, proposed, rejected, and unresolved requirements
 ├── risks.md                Risks, issues, mitigations, owners, and status
@@ -40,6 +41,7 @@ Do not remove a source registration while any wiki claim, historical record, or 
    - **Evidence:** what a cited source states or shows; evidence is not automatically truth.
    - **Interpretation:** an inference from cited evidence; identify plausible alternatives when material.
    - **Assumption:** an unverified belief; state what would validate it when relevant.
+   - **Problem hypothesis:** a falsifiable statement about an affected group, situation, goal, difficulty, and consequence; list supporting evidence, contradicting evidence, unknowns, and a worded confidence rationale separately. Absence of contradicting evidence is not corroboration.
    - **Proposal:** a suggested future choice that has not been decided.
    - **Decision:** an explicit choice supported by a cited decision record or source statement.
 8. Preserve disagreements and superseded decisions; never rewrite history to make it look consistent.

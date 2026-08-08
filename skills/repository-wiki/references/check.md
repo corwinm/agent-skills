@@ -16,6 +16,7 @@ Check for:
 - broken Markdown links, resolving each destination from the containing page;
 - missing or invalid source locators;
 - unlabeled interpretations, assumptions, or proposals presented as confirmed;
+- problem hypotheses that are not falsifiable or do not list supporting evidence, contradicting evidence, and unknowns separately;
 - duplicate or conflicting active decisions and requirements;
 - stale `current-state.md` claims contradicted by newer evidence;
 - answered questions still marked open;
