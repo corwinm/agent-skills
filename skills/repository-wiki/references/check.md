@@ -18,7 +18,7 @@ Check for:
 - broken Markdown links, resolving each destination from the containing page;
 - missing or invalid source locators;
 - transcript-derived material whose meeting-level transcription consent is not `granted` or `granted-with-anonymization`, whose required anonymization is absent, whose speaker cannot be mapped to a declared participant, or whose participant-specific discovery-use or direct-quotation consent is denied, withdrawn, or `unknown` for that use;
-- discovery-workspace transcript entries whose current consent-relevant meeting-control values differ from the last reconciled `control_state` snapshot, or that lack a snapshot, requiring consent reconciliation even when transcript bytes are unchanged;
+- discovery-workspace transcript entries whose configured transcript path, complete meeting consent object, complete privacy object, or complete participant consent objects differ from the last reconciled `control_state` snapshot, or that lack a snapshot, requiring consent/privacy reconciliation even when transcript bytes are unchanged;
 - evidence records without a valid `observation`, `direct-quote`, `behavioral-data`, `document`, or `reported-experience` type; that omit available corroboration or limitations; or that silently drop unavailable source ID, locator, affected group, collection date, corroboration, or limitations instead of recording `Unknown`;
 - requests whose original wording or available source, requester, date, urgency, stated rationale, or requested solution was lost or overwritten by reframing;
 - interpretations without an explicit author or without their contributing evidence and material alternatives;
@@ -43,7 +43,7 @@ Without `--fix`, report findings only.
 
 With `--fix`:
 
-1. Verify that every exact repair target was baselined before the audit read that informed its repair. If not, baseline and reread it and recompute the repair. Record an explicit `absent` sentinel for a new target before preparing its edit. Immediately before every repair write, repeat the safety check and verify that target against its baseline; if it drifted, stop before overwriting it and re-audit and reconcile the concurrent change.
+1. Verify that every exact repair target was baselined before the audit read that informed its repair. If not, baseline and reread it and recompute the repair. Record an explicit `absent` sentinel for a new target before preparing its edit. Immediately before every repair write, repeat the safety check and verify that target against its baseline; if it drifted, stop before overwriting it and re-audit and reconcile the concurrent change. Generate complete repaired bytes in a unique regular temporary file in that target's directory, verify the temporary identity, repeat the checks, and use the shared same-directory atomic replacement procedure. Never truncate or stream directly into a repair target; if temporary creation or atomic replacement fails, leave the canonical path unchanged and remove only this operation's temporary file.
 2. Automatically repair only unambiguous mechanical issues such as index entries, link syntax, metadata normalization, sorting, manifest formatting, and reference updates after an approved ID choice.
 3. Classify apparent duplicate records by comparing original-source citations and meaning, not ID equality alone.
 4. For the same record under different IDs, preserve the ID present in the merge base. If neither ID is established, propose one ID to retain and update every reference only after approval.
