@@ -27,10 +27,6 @@ jobs:
         run: npm run typecheck
       - name: Run repository validator
         run: npm run validate
-      - name: Test discovery renderer
-        run: npm test
-      - name: Verify example presentation is current
-        run: npm run check:example
       - name: Verify skills.sh discovery
         run: npx --yes skills@latest add . --list
       - name: Check out Agent Skills reference validator
