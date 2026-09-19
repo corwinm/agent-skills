@@ -4,7 +4,7 @@ description: Use when a user wants to initialize, ingest, query, maintain, audit
 license: MIT
 metadata:
   author: corwinm
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # Repository wiki
