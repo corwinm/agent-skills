@@ -20,6 +20,10 @@ npx skills add corwinm/agent-skills --skill repository-wiki
 
 ## Available skills
 
+### Delivery
+
+- [`release-readiness-audit`](skills/release-readiness-audit/SKILL.md) — Decide whether a specific change is ready to merge, deploy, or release using current, attributable evidence.
+
 ### Knowledge management
 
 - [`repository-wiki`](skills/repository-wiki/SKILL.md) — Build and maintain a cited, Git-backed project wiki from documents, notes, and transcripts.
