@@ -20,6 +20,10 @@ npx skills add corwinm/agent-skills --skill repository-wiki
 
 ## Available skills
 
+### Software delivery
+
+- [`cross-repository-change-coordination`](skills/cross-repository-change-coordination/SKILL.md) — Coordinate one logical change across repositories with explicit dependencies, exact-revision evidence, merge gates, and recovery paths.
+
 ### Knowledge management
 
 - [`repository-wiki`](skills/repository-wiki/SKILL.md) — Build and maintain a cited, Git-backed project wiki from documents, notes, and transcripts.
