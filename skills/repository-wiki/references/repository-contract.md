@@ -37,7 +37,7 @@ Do not remove a source registration while any wiki claim, historical record, or 
 2. Never modify source files while operating the wiki. Treat an identity change at a registered path as an immutability violation, not as a revision to ingest.
 3. Never follow source symlinks. Reject a symlinked source root and any source path with a symlink in any component, then verify the canonical path remains inside the canonical source root before reading or hashing it. Require every ingested source itself to be a regular file; reject FIFOs, sockets, devices, and other special files, and reverify the file type whenever source existence or identity is rechecked.
 4. Before reading or writing any wiki, manifest, saved-output, staging, replacement, or rollback path, inspect the configured root and every existing path component without following links and reject symlinks. Require the existing target to be the expected regular file or directory type, and verify its canonical path—or, for a new target, its nearest existing canonical parent—remains inside the configured root allowed for that operation. Repeat these checks immediately before every write. For saved output, establish the target's unfiltered identity or an explicit `absent` sentinel before generating the content, then recheck that baseline immediately before writing; drift stops the save without overwriting the current target. Before final mutation checks, resolve and path-check the current repository's already-existing Git common directory with `git rev-parse --git-common-dir`, then acquire the repository-wide wiki mutation lock there—for example `<git-common-dir>/wiki-operation.lock`—by atomic no-replace creation. This lock location exists before `/wiki init`, coordinates linked worktrees, and is outside repository-controlled wiki/source content; never bootstrap a lock parent by mutating the wiki layout first. Record the operation ID and owner, make all wiki mutation commands use that same lock, and hold it through publication, validation, and any rollback. Refuse a competing live lock and never remove a lock not owned by this operation; recover an apparently stale lock only after proving its owner is no longer live, otherwise stop for manual reconciliation. Never stream into or truncate a canonical wiki, manifest, repair, or saved-output path. Write complete bytes to a unique regular temporary file in the destination directory and verify its intended unfiltered identity. Then use compare-and-swap publication: for an absent baseline, atomically install only if the destination is still absent; for a present baseline, use an atomic exchange or equivalent primitive that preserves the displaced target and verify those displaced bytes equal the checked baseline before discarding them. If they differ, exchange the displaced version back only while the canonical target still matches this operation's staged identity; otherwise leave both versions preserved and stop for manual reconciliation. A pre-replacement check plus an unconditional rename is insufficient. Repeat applicable safety and baseline checks while holding the lock, and stop if the platform cannot provide the required no-replace/exchange semantics.
-5. Preserve direct quotations verbatim and visibly mark them as quotations. Label paraphrases as paraphrases or ordinary evidence summaries; never present altered or synthesized wording as a direct quote. For discovery-workspace meeting transcripts, treat the applicable `meeting.json` as mutable consent/control state, not as immutable evidence and never as a registered source identity. Apply source-path safety to it, record its regular-file type and unfiltered identity before transcript use, validate participant mappings and consent, and recheck that baseline immediately before returning or publishing derived content. If it changed, stop and reevaluate the current consent state. For meeting-level transcription, participant discovery use, and participant direct quotation, only `granted` and `granted-with-anonymization` are affirmative; every other state, including `unknown` and `not-applicable`, is not granted for that use. Enforce anonymization whenever required. Participant-specific discovery-use consent controls whether statements may be used at all, and separate direct-quotation consent controls whether verbatim words may appear.
+5. Preserve direct quotations verbatim and visibly mark them as quotations. Label paraphrases as paraphrases or ordinary evidence summaries; never present altered or synthesized wording as a direct quote.
 6. Cite every material factual claim, decision, requirement, risk, commitment, or stakeholder concern. When an answer or context pack synthesizes multiple canonical records, link every contributing canonical record ID as well as the verified original sources; do not sever synthesized reasoning from reviewed record history.
 7. Never fabricate a citation, locator, date, participant, owner, status, confidence, or consensus.
 8. Keep these categories visibly distinct:
@@ -113,26 +113,6 @@ Represent each ingested source consistently:
         "method": "git-hash-object-no-filters",
         "value": "<output of git hash-object --no-filters -- <path>>"
       },
-      "control_state": {
-        "path": "sources/meeting-<id>/meeting.json",
-        "transcript_path": "sources/meeting-<id>/transcript.md",
-        "meeting_consent": {
-          "recording": "granted",
-          "transcription": "granted"
-        },
-        "privacy": {
-          "classification": "internal",
-          "transcript_redacted": true,
-          "identity_map_stored_in_workspace": false
-        },
-        "participants": {
-          "P1": {
-            "discovery_use": "granted",
-            "direct_quote_use": "not-granted",
-            "external_sharing": "unknown"
-          }
-        }
-      },
       "ingested_at": "<actual RFC 3339 UTC operation timestamp>",
       "affected_pages": ["wiki/actions.md", "wiki/meetings/2026-03-15-steering.md"]
     }
@@ -140,7 +120,7 @@ Represent each ingested source consistently:
 }
 ```
 
-Use repository-relative source paths as object keys and repository-relative wiki paths in `affected_pages`. Compute identities with `git hash-object --no-filters -- <path>` so `.gitattributes` normalization and clean filters cannot change which bytes are identified; this uses Git already required by the workflow and adds no custom dependency. The hash detects identity; it is not an archived copy. Durability comes from preserving the registered source bytes at their cited path and committing source and wiki changes to Git together. For a discovery-workspace transcript, `control_state` records the last reconciled consent-relevant state: control path, configured transcript path, the complete meeting-level consent object, the complete privacy object including transcript-redaction state, and every participant's complete consent object. It is not an immutable source registration and may be replaced only after all effects of the current consent/privacy state are reconciled. Any current consent- or privacy-relevant value differing from this snapshot—or a missing snapshot—forces consent reconciliation even when transcript bytes are unchanged; unrelated mutable fields such as ingestion status do not. Omit `control_state` for sources without a mutable control manifest. Sort source keys, participant keys, and page lists for stable diffs. An ingestion timestamp records the actual operation time, not a claimed source or decision date.
+Use repository-relative source paths as object keys and repository-relative wiki paths in `affected_pages`. Compute identities with `git hash-object --no-filters -- <path>` so `.gitattributes` normalization and clean filters cannot change which bytes are identified; this uses Git already required by the workflow and adds no custom dependency. The hash detects identity; it is not an archived copy. Durability comes from preserving the registered source bytes at their cited path and committing source and wiki changes to Git together. Sort source keys and page lists for stable diffs. An ingestion timestamp records the actual operation time, not a claimed source or decision date.
 
 ## Reporting
 
