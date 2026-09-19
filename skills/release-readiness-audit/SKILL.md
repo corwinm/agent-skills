@@ -28,9 +28,10 @@ Do not use it as a substitute for implementing fixes, performing a full code rev
 1. **Fix the identity first.** A green result for a different commit, tag, branch, artifact, environment, or release target is not evidence for the candidate.
 2. **Derive gates; do not invent a universal checklist.** Repository policy, branch protection, release automation, deployment configuration, ownership rules, and the change’s risk define what is required.
 3. **Check completeness before success.** “All observed checks passed” is weaker than “every required check is present and passed.”
-4. **Prefer exercised outputs.** A source build alone does not prove that the package, image, archive, migration, or deployment users receive works.
-5. **Keep facts, inferences, blockers, and waivers distinct.** Missing evidence is not passing evidence. A waiver is not the same as a fixed blocker.
-6. **Time-box the verdict.** Readiness expires when the candidate, target, policy, dependencies, environment, approvals, or relevant evidence changes.
+4. **Respect the audit boundary.** Default to existing authoritative evidence. Do not build, install, start, deploy, publish, or run candidate code or migrations merely to complete an audit. Execute only with explicit authorization for that action and an isolated, disposable environment appropriate to its risk.
+5. **Prefer exercised outputs.** A source build alone does not prove that the package, image, archive, migration, or deployment users receive works. Missing evidence or permission to produce it remains missing; never silently downgrade or bypass the gate.
+6. **Keep facts, inferences, blockers, and waivers distinct.** Missing evidence is not passing evidence. A waiver is not the same as a fixed blocker.
+7. **Time-box the verdict.** Readiness expires when the candidate, target, policy, dependencies, environment, approvals, or relevant evidence changes.
 
 ## Audit workflow
 
@@ -47,6 +48,8 @@ Record the audit subject before collecting status:
 
 Resolve symbolic names to immutable identities where possible. Compare local and remote state explicitly; fetch or query the authoritative remote before trusting a local branch. If the local head, remote branch head, reviewed head, tested head, and artifact source revision differ, stop treating their evidence as interchangeable.
 
+Record source-worktree state separately from commit identity. Uncommitted or untracked files can affect a local build even when `HEAD` matches the candidate. Never attribute an artifact produced from a dirty primary checkout to the pinned `HEAD`. For any audit-authorized local build, require either (a) a clean isolated checkout or worktree at the exact candidate or (b) verifiable proof that the build context excludes every local change and contains exactly the candidate inputs. Record that source-state proof with the resulting artifact identity.
+
 Optional command examples (adapt to the available provider and tools):
 
 ```sh
@@ -56,7 +59,7 @@ git status --short --branch
 git log -1 --format='%H %cI %s' <candidate>
 ```
 
-**Complete when:** the candidate and destination are immutable or precisely resolved, and every later evidence item can be tied to them.
+**Complete when:** the candidate and destination are immutable or precisely resolved, the working-source state is known, and every later evidence item can be tied to the exact candidate rather than merely the current `HEAD` label.
 
 ### 2. Derive the applicable gates
 
@@ -115,22 +118,24 @@ Do not infer that a resolved thread means the concern was correctly addressed; t
 
 **Complete when:** the register includes every required gate, each state is normalized, and no result belongs to another revision or target.
 
-### 4. Build and exercise the deliverable
+### 4. Verify the built and exercised deliverable
 
 Identify what crosses the boundary: merge commit, package, container, binary, archive, migration bundle, documentation site, mobile build, infrastructure plan, or another artifact.
 
+First seek authoritative CI, registry, provenance, attestation, or prior acceptance evidence for the exact candidate and target. An audit is observational by default: do not run build, package, install, start, import, render, migration, deployment, or publication commands without explicit user or policy authorization for the specific action. Candidate code and migrations may execute only in an isolated, disposable environment with no production credentials or unintended external side effects and with cleanup or rollback defined. If authorization, isolation, or required existing evidence is absent, mark the applicable gate `missing` or `blocked`; do not execute anyway and do not recast the gate as optional.
+
 When an artifact exists:
 
-1. Build it through the intended release path, or identify the authoritative CI-produced artifact.
-2. Record its immutable identity and source revision.
+1. Identify the authoritative CI-produced artifact, or, only when the execution conditions above are met, build it through the intended release path from a clean isolated checkout/worktree of the exact candidate. A build from another context is acceptable only with verifiable proof that its input boundary excludes all local changes and exactly matches the candidate.
+2. Record the artifact's immutable identity (such as a digest), source revision, source-tree cleanliness or exclusion proof, build context, and provenance. Bind these records together; a matching `HEAD` alone is insufficient attribution.
 3. Inspect package contents and metadata where relevant.
-4. Install, start, import, unpack, render, migrate, or otherwise exercise the artifact in a representative clean context.
-5. Run a focused smoke or acceptance path against the built output, not only the source tree.
+4. Using authoritative existing results or explicitly authorized execution in the isolated disposable environment, install, start, import, unpack, render, migrate, or otherwise exercise the artifact in a representative clean context.
+5. Use existing evidence or authorized execution to establish a focused smoke or acceptance path against the built output, not only the source tree.
 6. Confirm the artifact promoted or proposed is the one exercised; rebuilding later creates a new candidate unless reproducibility is established.
 
 Scale this to the change. A prose-only merge may need no artifact. A library release should normally test the packed package rather than only workspace imports. A deployment should identify the image digest or equivalent, not merely a mutable tag.
 
-**Complete when:** either the actual deliverable has been built and exercised with recorded identity, or the audit explains why no artifact gate applies.
+**Complete when:** either authoritative evidence shows that the actual deliverable was built and exercised with its identity bound to the exact clean source state, or the audit records the missing evidence or authorization as an unmet gate, or the audit explains why no artifact gate applies.
 
 ### 5. Check cross-surface alignment
 
@@ -230,7 +235,9 @@ Link or cite evidence where the medium permits. Include enough detail for anothe
 - **Checklist substitution:** applying every familiar gate instead of deriving applicable ones.
 - **Green-subset fallacy:** reporting success without proving all required checks are present.
 - **Revision drift:** combining review, CI, and artifact evidence from different heads.
+- **Dirty-build misattribution:** labeling an artifact as the pinned `HEAD` even though a dirty checkout could have changed its inputs.
 - **Source-only confidence:** testing a workspace but never the shipped artifact.
+- **Audit-to-operation escalation:** running candidate code or migrations without explicit authorization and a safe isolated disposable environment instead of reporting missing evidence.
 - **Transition collapse:** calling a mergeable change deployable or releasable without destination evidence.
 - **Approval laundering:** treating an unresolved conversation, stale approval, or unauthorized waiver as consent.
 - **Publication blindness:** assuming a failed release made no external changes.
@@ -241,12 +248,13 @@ Link or cite evidence where the medium permits. Include enough detail for anothe
 
 Before returning the audit, confirm:
 
-- [ ] Candidate revision, artifact identity, and target are exact.
-- [ ] Local, remote, reviewed, tested, built, and proposed identities agree or differences are blockers.
+- [ ] Candidate revision, artifact identity, source state, and target are exact.
+- [ ] Local, remote, reviewed, tested, built, and proposed identities agree or differences are blockers; every locally built artifact has clean-checkout or build-context exclusion proof bound to its digest.
 - [ ] Merge, deploy, and release gates are distinguished.
 - [ ] The full required gate set is present; passing checks are not merely a subset.
 - [ ] Review decisions and unresolved threads are accounted for.
-- [ ] The actual artifact is built and exercised when applicable.
+- [ ] Existing authoritative evidence is preferred; any audit-triggered execution had explicit authorization and used an isolated, disposable safe environment.
+- [ ] The actual artifact is built and exercised when applicable, or missing evidence or execution permission is reported as an unmet gate.
 - [ ] Version, notes, docs, migrations, dependencies, security, and licenses are aligned in proportion to scope.
 - [ ] Partial publication or deployment state and environment acceptance are known.
 - [ ] Every bypass has explicit authority, scope, evidence, and expiry.
