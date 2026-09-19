@@ -1,11 +1,10 @@
 # Repository guidance
 
-This repository contains portable Agent Skills for product discovery.
+This repository contains portable Agent Skills.
 
 - Skills live in `skills/<name>/SKILL.md`.
 - Follow https://agentskills.io/ and run `npm run check` after edits.
 - Run `npm run format` before committing; oxfmt is the repository formatter.
-- Preserve the separation between evidence, interpretation, assumptions, hypotheses, and decisions.
-- Skills must assist human judgment, not claim autonomous certainty about user problems.
+- Keep each skill independently installable by placing required references and assets inside its directory.
 - Prefer concrete completion criteria over generic advice.
-- Keep cross-skill terminology aligned with `docs/discovery-artifact.md`.
+- Preserve evidence, provenance, uncertainty, and user consent where relevant.

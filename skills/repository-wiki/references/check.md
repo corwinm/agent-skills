@@ -17,8 +17,6 @@ Check for:
 - material claims without original-source citations;
 - broken Markdown links, resolving each destination from the containing page;
 - missing or invalid source locators;
-- transcript-derived material whose meeting-level transcription, participant-specific discovery-use, or participant-specific direct-quotation consent for that use is anything other than `granted` or `granted-with-anonymization`; whose required anonymization is absent; or whose speaker cannot be mapped to a declared participant;
-- discovery-workspace transcript entries whose configured transcript path, complete meeting consent object, complete privacy object, or complete participant consent objects differ from the last reconciled `control_state` snapshot, or that lack a snapshot, requiring consent/privacy reconciliation even when transcript bytes are unchanged;
 - evidence records without a valid `observation`, `direct-quote`, `behavioral-data`, `document`, or `reported-experience` type; that omit available corroboration or limitations; or that silently drop unavailable source ID, locator, affected group, collection date, corroboration, or limitations instead of recording `Unknown`;
 - requests whose original wording or available source, requester, date, urgency, stated rationale, or requested solution was lost or overwritten by reframing;
 - interpretations without an explicit author or without their contributing evidence and material alternatives;
