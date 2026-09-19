@@ -28,7 +28,7 @@ npx skills add corwinm/agent-skills --skill repository-wiki
 
 ### Software development
 
-- [`review-feedback-resolution`](skills/review-feedback-resolution/SKILL.md) — Resolve received review feedback with complete triage, proportional verification, and evidence-backed thread closure.
+- [`review-feedback-resolution`](skills/review-feedback-resolution/SKILL.md) — Resolve hosted or local review feedback with complete triage, proportional verification, and authorization-aware dispositions.
 
 ## Development
 
