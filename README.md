@@ -26,6 +26,10 @@ npx skills add corwinm/agent-skills --skill repository-wiki
 
 `repository-wiki` provides six operations: `init`, `ingest`, `query`, `context`, `check`, and `rebuild`. It stores immutable source material, maintained Markdown context, and a small ingestion manifest directly in the project repository without requiring a database, service, plugin, or custom CLI.
 
+### Software development
+
+- [`review-feedback-resolution`](skills/review-feedback-resolution/SKILL.md) — Resolve received review feedback with complete triage, proportional verification, and evidence-backed thread closure.
+
 ## Development
 
 ```bash
